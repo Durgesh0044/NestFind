@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ property.property }} | NestFind Luxury Real Estate</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #F5F6FA;
+            color: #1A1A2E;
+        }
+
+        /* Premium Color Palette */
+        :root {
+            --primary: #0F172A;
+            --primary-light: #1E293B;
+            --accent: #E8B84B;
+            --accent-dark: #D4A03A;
+            --accent-light: #F5DEB3;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+
+        /* Luxury Navbar */
+        .luxury-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            color: var(--gray-600);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section - Modern Minimal */
+        .property-hero {
+            padding-top: 8rem;
+            padding-bottom: 4rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FC 100%);
+        }
+
+        .hero-breadcrumb {
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-breadcrumb a {
+            color: var(--gray-500);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .hero-breadcrumb span {
+            color: var(--accent);
+        }
+
+        .property-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .property-location {
+            color: var(--gray-500);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .property-location i {
+            color: var(--accent);
+            margin-right: 0.5rem;
+        }
+
+        .property-price {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Stats Cards - Minimal */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-mini-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+        }
+
+        .stat-mini-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .stat-mini-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-mini-label {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Gallery - Clean Grid */
+        .gallery-section {
+            margin-bottom: 3rem;
+        }
+
+        .main-image-wrapper {
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+        }
+
+        .thumbnail-strip {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .thumbnail-strip::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .thumbnail-strip::-webkit-scrollbar-track {
+            background: var(--gray-200);
+            border-radius: 2px;
+        }
+
+        .thumbnail-strip::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .thumb {
+            width: 100px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .thumb.active {
+            border-color: var(--accent);
+        }
+
+        .thumb:hover {
+            transform: scale(1.05);
+        }
+
+        /* Agent Card - Clean Professional */
+        .agent-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-avatar {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .agent-info h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-info p {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 0;
+        }
+
+        .agent-badge {
+            background: var(--gray-100);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+
+        .agent-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .agent-stat {
+            text-align: center;
+        }
+
+        .agent-stat-num {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .agent-stat-label {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+        }
+
+        .contact-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-wa {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-call {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-email {
+            background: var(--gray-100);
+            color: var(--primary);
+            border: none;
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn-wa:hover,
+        .btn-call:hover,
+        .btn-email:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .share-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .share-link {
+            background: var(--gray-100);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .share-link:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: inline-block;
+            position: relative;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        /* Features List */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .feature-item i {
+            color: var(--accent);
+            width: 20px;
+        }
+
+        /* Map */
+        .property-map {
+            height: 300px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .lightbox-prev,
+        .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .property-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main-image {
+                height: 300px;
+            }
+
+            .thumb {
+                width: 70px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Luxury Navbar -->
+    <nav class="luxury-nav">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('public.index') }}" class="nav-logo">Nest<span
+                        style="color: var(--accent);">Find</span></a>
+                <div class="nav-links">
+                    <a href="{{ url_for('public.index') }}">Home</a>
+                    <a href="{{ url_for('public.all_properties') }}">Properties</a>
+                    <a href="{{ url_for('public.index') }}#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="property-hero">
+        <div class="container">
+            <div class="hero-breadcrumb">
+                <a href="{{ url_for('public.index') }}">Home</a> /
+                <a href="{{ url_for('public.all_properties') }}">Properties</a> /
+                <span>{{ property.category or 'Apartment' }}</span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="property-title">{{ property.property }}</h1>
+                    <p class="property-location">
+                        <i class="fa-solid fa-location-dot"></i> {{ property.location or 'Tricity Region, Chandigarh' }}
+                        <span class="badge"
+                            style="background: var(--accent); color: white; margin-left: 1rem;">Verified</span>
+                    </p>
+                    <div class="property-price">{{ property.price }}</div>
+                    <button class="favorite-btn-large" onclick="toggleFavorite(event, {{ property.id }})"
+                        data-property-id="{{ property.id }}"
+                        style="background: white; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 1rem;">
+                        <i class="fa-regular fa-heart"></i> Save to Favorites
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Mini Cards -->
+            <div class="stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon"><i class="fa-solid fa-bed"></i></div>
+                    <div class="stat-mini-value">{{ property.bedrooms or 'N/A' }}</div>
+                    <div class="stat-mini-label">Bedrooms</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon"><i class="fa-solid fa-bath"></i></div>
+                    <div class="stat-mini-value">2+</div>
+                    <div class="stat-mini-label">Bathrooms</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon"><i class="fa-solid fa-vector-square"></i></div>
+                    <div class="stat-mini-value">{{ property.area or 'N/A' }}</div>
+                    <div class="stat-mini-label">Area (sq.ft)</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-icon"><i class="fa-solid fa-building"></i></div>
+                    <div class="stat-mini-value">{{ property.category or 'Apartment' }}</div>
+                    <div class="stat-mini-label">Type</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="row g-4">
+            <!-- Left Column - Gallery & Details -->
+            <div class="col-lg-7">
+                <!-- Gallery -->
+                <div class="gallery-section">
+                    <div class="main-image-wrapper" onclick="openLightbox(0)">
+                        <img src="{{ all_images[0] if all_images else image }}" alt="Property" class="main-image"
+                            id="mainImage">
+                    </div>
+                    {% if all_images and all_images|length > 1 %}
+                    <div class="thumbnail-strip">
+                        {% for img in all_images %}
+                        <img src="{{ img }}" class="thumb" onclick="changeImage({{ loop.index0 }}, this)" alt="Thumb">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Property Details -->
+                <div class="details-card">
+                    <h3 class="section-title">Property Details</h3>
+                    <div class="info-row">
+                        <span class="info-label">Property ID</span>
+                        <span class="info-value">NF-{{ '%04d' % property.id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Listing Type</span>
+                        <span class="info-value">{{ property.type or 'For Sale' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Listed On</span>
+                        <span class="info-value">{{ property.created_at.strftime('%B %d, %Y') if property.created_at
+                            else 'Recently' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            <span class="badge" style="background: var(--success); color: white;">{{ property.status
+                                }}</span>
+                        </span>
+                    </div>
+                    {% if property.brochure %}
+                    <div class="info-row">
+                        <span class="info-label">Brochure</span>
+                        <span class="info-value">
+                            <a href="/static/uploads/{{ property.brochure }}" target="_blank"
+                                style="color: var(--accent);">
+                                <i class="fa-regular fa-file-pdf"></i> Download PDF
+                            </a>
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="details-card">
+                    <h3 class="section-title">Description</h3>
+                    <p style="color: var(--gray-600); line-height: 1.7;">
+                        Experience luxury living at its finest with this exquisite {{ property.category or 'property' }}
+                        located in the heart of {{ property.location or 'Tricity Region' }}.
+                        This stunning property features {{ property.bedrooms or 'spacious' }} bedrooms, modern
+                        amenities, and premium finishes throughout.
+                        Perfect for families seeking comfort and style in a prime location.
+                    </p>
+                </div>
+
+                <!-- Map -->
+                {% if property.latitude and property.longitude %}
+                <div class="details-card">
+                    <h3 class="section-title">Location</h3>
+                    <div id="propertyMap" class="property-map"></div>
+                    <div class="mt-3 text-center">
+                        <a href="https://www.google.com/maps?q={{ property.latitude }},{{ property.longitude }}"
+                            target="_blank" style="color: var(--accent); text-decoration: none;">
+                            <i class="fa-solid fa-directions"></i> Get Directions
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column - Agent & Contact -->
+            <div class="col-lg-5">
+                <!-- Agent Card -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-avatar">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div class="agent-info">
+                            <h4>{{ property.broker_info.name if property.broker_info else 'NestFind Agent' }}</h4>
+                            <p><i class="fa-regular fa-star" style="color: var(--accent);"></i> Certified Real Estate
+                                Expert</p>
+                            <span class="agent-badge">⭐ 4.9 ★ Rating</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-stats">
+                        <div class="agent-stat">
+                            <div class="agent-stat-num">120+</div>
+                            <div class="agent-stat-label">Properties Sold</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-num">8 yrs</div>
+                            <div class="agent-stat-label">Experience</div>
+                        </div>
+                        <div class="agent-stat">
+                            <div class="agent-stat-num">98%</div>
+                            <div class="agent-stat-label">Satisfaction</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-buttons">
+                        <a href="tel:{{ property.broker_info.phone if property.broker_info else '+91 98765 43210' }}"
+                            class="btn-call">
+                            <i class="fa-solid fa-phone me-2"></i> Call Now
+                        </a>
+                        <a href="{{ whatsapp_url }}" target="_blank" class="btn-wa">
+                            <i class="fa-brands fa-whatsapp me-2"></i> WhatsApp
+                        </a>
+                        <button onclick="openContactForm()" class="btn-email">
+                            <i class="fa-regular fa-envelope me-2"></i> Email Inquiry
+                        </button>
+                    </div>
+
+                    <div class="share-links">
+                        <div class="share-link" onclick="copyPropertyLink()">
+                            <i class="fa-regular fa-link"></i>
+                        </div>
+                        <div class="share-link" onclick="shareProperty()">
+                            <i class="fa-regular fa-share-from-square"></i>
+                        </div>
+                        <div class="share-link" onclick="window.print()">
+                            <i class="fa-regular fa-print"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Features -->
+                <div class="details-card">
+                    <h3 class="section-title">Key Features</h3>
+                    <div class="features-grid">
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Prime Location</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Modern Architecture</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> 24/7 Security</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Modular Kitchen</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Power Backup</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Covered Parking</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Gymnasium</div>
+                        <div class="feature-item"><i class="fa-solid fa-check-circle"></i> Swimming Pool</div>
+                    </div>
+                </div>
+
+                <!-- Amenities -->
+                <div class="details-card">
+                    <h3 class="section-title">Amenities</h3>
+                    <div class="features-grid">
+                        <div class="feature-item"><i class="fa-solid fa-wifi"></i> High-Speed WiFi</div>
+                        <div class="feature-item"><i class="fa-solid fa-car"></i> Parking</div>
+                        <div class="feature-item"><i class="fa-solid fa-dumbbell"></i> Gym</div>
+                        <div class="feature-item"><i class="fa-solid fa-water"></i> Swimming Pool</div>
+                        <div class="feature-item"><i class="fa-solid fa-tree"></i> Garden</div>
+                        <div class="feature-item"><i class="fa-solid fa-shield"></i> CCTV Security</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <span class="lightbox-prev" onclick="prevImage()">&#10094;</span>
+        <span class="lightbox-next" onclick="nextImage()">&#10095;</span>
+        <img id="lightboxImg" class="lightbox-img" src="">
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h4 style="font-family: 'Playfair Display'; margin-bottom: 1rem;">Nest<span
+                            style="color: var(--accent);">Find</span></h4>
+                    <p style="color: rgba(255,255,255,0.6);">Discover handpicked apartments & luxury residences in the
+                        most sought-after locations.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 style="margin-bottom: 1rem;">Quick Links</h5>
+                    <ul style="list-style: none; padding: 0;">
+                        <li class="mb-2"><a href="{{ url_for('public.index') }}"
+                                style="color: rgba(255,255,255,0.6); text-decoration: none;">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('public.all_properties') }}"
+                                style="color: rgba(255,255,255,0.6); text-decoration: none;">Properties</a></li>
+                        <li class="mb-2"><a href="{{ url_for('public.index') }}#contact"
+                                style="color: rgba(255,255,255,0.6); text-decoration: none;">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 style="margin-bottom: 1rem;">Connect</h5>
+                    <p style="color: rgba(255,255,255,0.6);"><i class="fa-solid fa-phone me-2"
+                            style="color: var(--accent);"></i> +91 98765 43210</p>
+                    <p style="color: rgba(255,255,255,0.6);"><i class="fa-solid fa-envelope me-2"
+                            style="color: var(--accent);"></i> hello@nestfind.com</p>
+                </div>
+            </div>
+            <hr style="background: rgba(255,255,255,0.1); margin: 2rem 0 1rem;">
+            <p style="text-align: center; color: rgba(255,255,255,0.4);">&copy; 2025 NestFind — Premium Real Estate. All
+                rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Image Gallery
+        let currentImageIndex = 0;
+        let allImages = {{ all_images | tojson }};
+        if (!allImages || allImages.length === 0) {
+            allImages = ['{{ image }}'];
+        }
+
+        function changeImage(index, element) {
+            currentImageIndex = index;
+            document.getElementById('mainImage').src = allImages[index];
+            document.querySelectorAll('.thumb').forEach(thumb => thumb.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function openLightbox(index) {
+            currentImageIndex = index;
+            document.getElementById('lightboxImg').src = allImages[index];
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function prevImage() {
+            currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+            document.getElementById('lightboxImg').src = allImages[currentImageIndex];
+        }
+
+        function nextImage() {
+            currentImageIndex = (currentImageIndex + 1) % allImages.length;
+            document.getElementById('lightboxImg').src = allImages[currentImageIndex];
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (document.getElementById('lightbox').classList.contains('active')) {
+                if (e.key === 'ArrowLeft') prevImage();
+                else if (e.key === 'ArrowRight') nextImage();
+                else if (e.key === 'Escape') closeLightbox();
+            }
+        });
+
+        // Navbar scroll
+        window.addEventListener('scroll', function () {
+            const nav = document.querySelector('.luxury-nav');
+            if (window.scrollY > 50) {
+                nav.style.background = 'white';
+                nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.05)';
+            } else {
+                nav.style.background = 'rgba(255, 255, 255, 0.98)';
+                nav.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+            }
+        });
+
+        // Copy link
+        function copyPropertyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            Swal.fire({ icon: 'success', title: 'Link Copied!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        }
+
+        function shareProperty() {
+            if (navigator.share) {
+                navigator.share({ title: '{{ property.property }}', url: window.location.href });
+            } else {
+                copyPropertyLink();
+            }
+        }
+
+        // ========== FIXED: CORRECTED openContactForm FUNCTION ==========
+        function openContactForm() {
+            const propertyInfo = {
+                id: {{ property.id }},
+                name: "{{ property.property }}",
+                broker_id: {{ property.broker_id if property.broker_id else 'null' }}
+            };
+            console.log('Storing property info:', propertyInfo);
+            localStorage.setItem('inquiryProperty', JSON.stringify(propertyInfo));
+            window.location.href = '/#contact';
+        }
+
+        // Map
+        {% if property.latitude and property.longitude %}
+        const map = L.map('propertyMap').setView([{{ property.latitude }}, {{ property.longitude }}], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '', maxZoom: 18 }).addTo(map);
+        L.marker([{{ property.latitude }}, {{ property.longitude }}]).addTo(map).bindPopup('<b>{{ property.property }}</b>').openPopup();
+        {% endif %}
+
+        // Set active first thumbnail
+        if (document.querySelector('.thumb')) {
+            document.querySelector('.thumb').classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

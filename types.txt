@@ -1,0 +1,8 @@
+ID: 1, Type: 🏡 For Sale, Category: Apartment / Flat
+ID: 2, Type: 🔑 For Rent, Category: Apartment / Flat
+ID: 3, Type: 🏡 For Sale, Category: Apartment / Flat
+ID: 4, Type: 🏗 New Project, Category: Apartment / Flat
+ID: 5, Type: 🏡 For Sale, Category: Villa / Bungalow
+ID: 6, Type: 🏡 For Sale, Category: Villa / Bungalow
+ID: 7, Type: 🏡 For Sale, Category: Apartment / Flat
+ID: 8, Type: 🏡 For Sale, Category: Apartment / Flat

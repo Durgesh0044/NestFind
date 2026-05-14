@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Login — NestFind</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0B1F3A;
+            --navy-mid: #1A3558;
+            --gold: #C9A84C;
+            --white: #FFFFFF;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-card {
+            background: var(--white);
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .admin-header {
+            background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .admin-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(201,168,76,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2rem;
+            color: var(--gold);
+        }
+        .admin-body {
+            padding: 40px;
+        }
+        .form-control {
+            border: 1.5px solid #E8ECF4;
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
+        .form-control:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+        }
+        .btn-admin {
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            width: 100%;
+            font-weight: 600;
+        }
+        .btn-admin:hover {
+            background: var(--gold);
+            color: var(--navy);
+        }
+        .alert {
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-card">
+        <div class="admin-header">
+            <div class="admin-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h3 style="font-family: 'Playfair Display';">Super Admin Portal</h3>
+            <p class="mb-0 opacity-75">Platform Owner Access</p>
+        </div>
+        <div class="admin-body">
+            {% if error %}
+            <div class="alert alert-danger">
+                <i class="fa-solid fa-circle-exclamation me-2"></i> {{ error }}
+            </div>
+            {% endif %}
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="admin@nestfind.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn-admin">Access Dashboard</button>
+            </form>
+            <div class="text-center mt-4">
+                <small class="text-muted">This area is for platform administrators only.</small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

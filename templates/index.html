@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NestFind – Real Estate</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    /* Integrated Search Styles */
+    .search-container {
+      background: white;
+      border-radius: 16px;
+      padding: 1.2rem;
+      margin: 0 auto 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      max-width: 1100px;
+    }
+
+    .main-search-bar {
+      border-bottom: 1px solid var(--grey-light);
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-nearme {
+      background: var(--navy);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-nearme:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-outline-gold {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-outline-gold:hover {
+      background: var(--gold);
+      color: white;
+    }
+
+    .advanced-filters-panel {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1rem;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--grey-dark);
+    }
+
+    .checkbox-label input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--gold);
+    }
+
+    .price-quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .price-quick-btn {
+      padding: 0.2rem 0.6rem;
+      font-size: 0.7rem;
+      background: white;
+      border: 1px solid var(--grey-light);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .price-quick-btn:hover {
+      background: var(--gold);
+      color: white;
+      border-color: var(--gold);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      padding-top: 1rem;
+      border-top: 1px solid var(--grey-light);
+    }
+
+    .filter-actions .btn-primary {
+      background: var(--gold);
+      border: none;
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    .filter-actions .btn-secondary {
+      background: var(--grey-light);
+      border: none;
+      color: var(--grey-dark);
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg fixed-top navbar-dark" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+        Nest<span class="brand-accent">Find</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+        aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="toggler-icon"><i class="fa-solid fa-bars"></i></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          <li class="nav-item"><a class="nav-link" href="#about">About Us</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('api.user_favorites') }}">
+              <i class="fa-regular fa-heart"></i> Favorites
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link nav-cta dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="fa-solid fa-user-tie me-1"></i> Dashboard
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="background: var(--navy); border: 1px solid var(--gold);">
+              <li><a class="dropdown-item text-white" href="{{ url_for('admin.admin_dashboard') }}"><i
+                    class="fa-solid fa-gauge me-2"></i> Admin Panel</a></li>
+              <li>
+                <hr class="dropdown-divider" style="background-color: var(--gold);">
+              </li>
+              <li><a class="dropdown-item text-white" href="{{ url_for('auth.logout') }}"><i
+                    class="fa-solid fa-sign-out-alt me-2"></i> Logout</a></li>
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <div class="d-flex gap-2">
+              <a class="nav-link" href="{{ url_for('auth.signin') }}">Login</a>
+              <a class="nav-link nav-cta" href="{{ url_for('auth.signup') }}">Signup</a>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero-section d-flex align-items-center" id="home">
+    <div class="hero-overlay"></div>
+    <div class="container text-center position-relative z-1">
+      <p class="hero-sub reveal">PREMIUM REAL ESTATE</p>
+      <h1 class="hero-title reveal delay-1">Find Your <span class="highlight">Home</span></h1>
+      <p class="hero-desc reveal delay-2">{{ hero_description|safe }}</p>
+
+      <!-- ================= COMPLETE SEARCH SYSTEM ================= -->
+      <div class="search-container reveal delay-3">
+
+        <!-- MAIN SEARCH BAR -->
+        <div class="main-search-bar">
+          <div class="row g-2 align-items-center">
+
+            <!-- LOCATION -->
+            <div class="col-12 col-md-4">
+              <div class="search-input-wrapper position-relative">
+                <i class="fa-solid fa-location-dot search-icon"></i>
+                <input type="text" id="searchLocation" class="form-control search-input"
+                  placeholder="📍 City, Area or Project" autocomplete="off" />
+                <div id="locationSuggestions" class="suggestions-dropdown" style="display:none;"></div>
+              </div>
+            </div>
+
+            <!-- PROPERTY TYPE -->
+            <div class="col-12 col-md-3">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-building search-icon"></i>
+                <select id="searchType" class="form-select search-input">
+                  <option value="">🏢 Property Type</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Flat">Flat</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Plot">Plot / Land</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PRICE RANGE - Like OLX/Amazon -->
+            <div class="col-12 col-md-3">
+              <div class="price-range-wrapper">
+                <div class="price-range-header">
+                  <i class="fa-solid fa-indian-rupee-sign"></i>
+                  <span>Price Range</span>
+                </div>
+                <div class="price-range-inputs">
+                  <input type="number" id="minPriceMain" class="form-control form-control-sm" placeholder="Min ₹"
+                    step="1000">
+                  <span class="price-sep">-</span>
+                  <input type="number" id="maxPriceMain" class="form-control form-control-sm" placeholder="Max ₹"
+                    step="1000">
+                </div>
+                <div class="price-quick-btns">
+                  <button type="button" class="price-quick" data-min="0" data-max="5000">Under ₹5k</button>
+                  <button type="button" class="price-quick" data-min="5000" data-max="10000">₹5k-10k</button>
+                  <button type="button" class="price-quick" data-min="10000" data-max="20000">₹10k-20k</button>
+                  <button type="button" class="price-quick" data-min="20000" data-max="50000">₹20k-50k</button>
+                  <button type="button" class="price-quick" data-min="50000" data-max="100000">₹50k-1L</button>
+                  <button type="button" class="price-quick" data-min="100000" data-max="500000">₹1L-5L</button>
+                  <button type="button" class="price-quick" data-min="500000" data-max="1000000">₹5L-10L</button>
+                  <button type="button" class="price-quick" data-min="1000000" data-max="5000000">₹10L-50L</button>
+                  <button type="button" class="price-quick" data-min="5000000" data-max="10000000">₹50L-1Cr</button>
+                  <button type="button" class="price-quick" data-min="10000000" data-max="20000000">₹1Cr-2Cr</button>
+                  <button type="button" class="price-quick" data-min="20000000" data-max="0">₹2Cr+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="col-12 col-md-2">
+              <div class="search-actions d-flex gap-2">
+                <button type="button" class="btn-search-main w-100" id="mainSearchBtn">
+                  <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+                <button type="button" class="btn-filter" id="filterToggleBtn">
+                  <i class="fa-solid fa-sliders-h"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ADVANCED FILTERS PANEL -->
+        <div id="advancedFiltersPanel" class="advanced-filters-panel" style="display: none;">
+          <div class="row g-3">
+
+            <!-- AREA -->
+            <div class="col-md-3 col-sm-6">
+              <label class="filter-label">Min Area (sq ft)</label>
+              <input type="number" id="minArea" class="filter-input" placeholder="Min Area" step="100">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="filter-label">Max Area (sq ft)</label>
+              <input type="number" id="maxArea" class="filter-input" placeholder="Max Area" step="100">
+            </div>
+
+            <!-- BEDROOMS -->
+            <div class="col-md-3">
+              <label class="filter-label">Bedrooms</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="bedrooms"
+                    value="1 BHK"> 1 BHK</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="bedrooms"
+                    value="2 BHK"> 2 BHK</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="bedrooms"
+                    value="3 BHK"> 3 BHK</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="bedrooms"
+                    value="4+ BHK"> 4+ BHK</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="bedrooms"
+                    value="Studio"> Studio</label>
+              </div>
+            </div>
+
+            <!-- CATEGORY -->
+            <div class="col-md-3">
+              <label class="filter-label">Category</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="category"
+                    value="Apartment / Flat"> Apartment</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="category"
+                    value="Villa / Bungalow"> Villa</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="category"
+                    value="Plot / Land"> Plot</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="category"
+                    value="Commercial"> Commercial</label>
+              </div>
+            </div>
+
+            <!-- LISTING TYPE -->
+            <div class="col-md-12">
+              <label class="filter-label">Listing Type</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="listing_type"
+                    value="For Sale"> For Sale</label>
+                <label class="checkbox-label"><input type="checkbox" class="filter-checkbox" data-filter="listing_type"
+                    value="For Rent"> For Rent</label>
+              </div>
+            </div>
+
+          </div>
+          <div class="filter-actions mt-3">
+            <button type="button" class="btn-apply-filters" id="applyFiltersBtn">Apply Filters</button>
+            <button type="button" class="btn-reset-filters" id="resetFiltersBtn">Reset All</button>
+          </div>
+        </div>
+
+        <!-- ACTIVE FILTERS DISPLAY -->
+        <div id="activeFiltersBar" class="active-filters-bar" style="display: none;">
+          <div class="active-filters-header">
+            <span><i class="fa-solid fa-filter"></i> Active Filters:</span>
+            <button id="clearAllFiltersBtn" class="clear-all-btn">Clear All</button>
+          </div>
+          <div id="activeFiltersList" class="active-filters-list"></div>
+        </div>
+      </div>
+      <!-- ================= END SEARCH SYSTEM ================= -->
+      <a href="#features" class="scroll-down"><i class="fa-solid fa-chevron-down"></i></a>
+  </section>
+
+  <section class="features-section py-5" id="features">
+    <div class="container">
+      <div class="row g-4 text-center">
+        <div class="col-12 col-md-4">
+          <div class="feature-card reveal">
+            <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h5>Verified Listings</h5>
+            <p>Every property is inspected and verified by our expert team before being listed.</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="feature-card reveal delay-1">
+            <div class="feature-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <h5>Prime Locations</h5>
+            <p>Properties situated in top neighbourhoods with excellent connectivity.</p>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="feature-card reveal delay-2">
+            <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
+            <h5>24/7 Support</h5>
+            <p>Our dedicated team is available round the clock to assist you.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="apartments-section py-5" id="apartments">
+    <div class="container">
+      <div class="section-header text-center reveal">
+        <p class="section-tag">PROPERTIES</p>
+        <h2 class="section-title">Featured <span class="highlight">Apartments</span></h2>
+        <p class="section-desc">Carefully curated listings for every lifestyle</p>
+      </div>
+      <div class="row g-4 mt-2">
+        {% for apt in apartments %}
+        <div
+          class="col-12 col-md-6 col-lg-4 reveal{% if loop.index0 == 1 %} delay-1{% elif loop.index0 == 2 %} delay-2{% endif %}">
+          <div class="apt-card{% if apt.featured %} featured{% endif %}" data-property-id="{{ apt.id }}"
+            onclick="viewPropertyDetails(this, event)" style="cursor: pointer;">
+            <div class="apt-img" style="position: relative; height: 220px; overflow: hidden;">
+              {% if apt.images and apt.images|length > 0 %}
+              {% if apt.images|length > 1 %}
+              <div id="carousel-apt-{{ apt.id }}" class="carousel slide h-100" data-bs-ride="carousel">
+                <div class="carousel-inner h-100">
+                  {% for img in apt.images %}
+                  <div class="carousel-item h-100 {% if loop.first %}active{% endif %}">
+                    <div class="w-100 h-100"
+                      style="background-image:url('{{ img }}'); background-size:cover; background-position:center;">
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carousel-apt-{{ apt.id }}"
+                  data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carousel-apt-{{ apt.id }}"
+                  data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              {% else %}
+              <div class="w-100 h-100"
+                style="background-image:url('{{ apt.images[0] }}'); background-size:cover; background-position:center;">
+              </div>
+              {% endif %}
+              {% elif apt.image %}
+              <div class="w-100 h-100"
+                style="background-image:url('{{ apt.image }}'); background-size:cover; background-position:center;">
+              </div>
+              {% else %}
+              <div class="w-100 h-100"
+                style="background-color: #f4f5f7; display:flex; align-items:center; justify-content:center; color:#6c757d;">
+                No Image</div>
+              {% endif %}
+
+              <!-- Property Type Badge - Top Left -->
+              <span class="apt-badge{% if apt.badge_class %} {{ apt.badge_class }}{% endif %}"
+                style="position: absolute; top: 10px; left: 10px; z-index: 5;">{{ apt.badge }}</span>
+
+              <!-- FAVORITE BUTTON - TOP RIGHT CORNER -->
+              <button type="button" class="favorite-btn" onclick="toggleFavorite(event, {{ apt.id }})"
+                data-property-id="{{ apt.id }}"
+                style="position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; background: rgba(255,255,255,0.95); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.2s ease;">
+                <i class="fa-regular fa-heart" style="font-size: 1rem; color: #666;"></i>
+              </button>
+
+              {% if apt.featured %}
+              <div class="apt-featured-ribbon"
+                style="position: absolute; bottom: 12px; left: -30px; background: var(--gold); color: var(--navy); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 1.8rem; transform: rotate(-2deg); z-index: 5;">
+                ⭐ Featured</div>
+              {% endif %}
+            </div>
+            <div class="apt-body">
+              <div class="apt-price">{{ apt.price }}{% if apt.price_suffix %}<span>{{ apt.price_suffix }}</span>{% endif
+                %}</div>
+              <h5 class="apt-name">{{ apt.name }}</h5>
+              <p class="apt-loc"><i class="fa-solid fa-location-dot"></i> {{ apt.location }}</p>
+              <div class="apt-meta">
+                <span><i class="fa-solid fa-bed"></i> {{ apt.beds }} Beds</span>
+                <span><i class="fa-solid fa-bath"></i> {{ apt.baths }} Baths</span>
+                <span><i class="fa-solid fa-vector-square"></i> {{ apt.sqft }}</span>
+              </div>
+              <div class="mt-3 p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                <div class="small">
+                  <div class="text-muted" style="font-size: 0.7rem;">LISTED BY</div>
+                  <div class="fw-bold text-navy" style="font-size: 0.85rem;">{{ apt.broker_name }}</div>
+                </div>
+                <a href="tel:{{ apt.broker_phone }}" class="btn btn-sm btn-outline-gold px-3"
+                  style="border-radius: 20px; font-size: 0.8rem;"><i class="fa-solid fa-phone me-1"></i> Call</a>
+              </div>
+              <button type="button" class="btn btn-apt-detail w-100 mt-3"
+                data-property-id="{{ apt.id|default(loop.index) }}" onclick="viewPropertyDetails(this)">View
+                Details</button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="text-center mt-5 reveal">
+        <a href="{{ url_for('public.all_properties') }}" class="btn btn-outline-load">Load More Properties <i
+            class="fa-solid fa-arrow-right ms-1"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="map-section py-5" id="map">
+    <div class="container">
+      <div class="section-header text-center reveal">
+        <p class="section-tag">EXPLORE AREA</p>
+        <h2 class="section-title">Find Properties <span class="highlight">On Map</span></h2>
+        <p class="section-desc">Explore available properties in Chandigarh and nearby areas</p>
+      </div>
+      <div class="map-wrapper reveal delay-1">
+        <div class="map-sidebar">
+          <h6 class="map-sidebar-title"><i class="fa-solid fa-list me-2"></i>Nearby Listings</h6>
+          <ul class="map-list" id="mapList"></ul>
+        </div>
+        <div id="propertyMap"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section py-5" id="about">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-12 col-lg-6 reveal">
+          <div class="about-img-wrap">
+            <img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=700" alt="About NestFind"
+              class="about-img" />
+            <div class="about-badge-box">
+              <div class="about-badge">
+                <span class="ab-num">15+</span>
+                <span class="ab-text">Years of<br />Excellence</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6 reveal delay-1">
+          <p class="section-tag">WHO WE ARE</p>
+          <h2 class="section-title mb-3">About <span class="highlight">NestFind</span></h2>
+          <p class="about-text">NestFind is a premier real estate consultancy helping thousands of families discover
+            their perfect home.</p>
+          <ul class="about-list">
+            <li><i class="fa-solid fa-circle-check"></i> 1,200+ verified properties across the tri-city area</li>
+            <li><i class="fa-solid fa-circle-check"></i> Transparent pricing with zero hidden charges</li>
+            <li><i class="fa-solid fa-circle-check"></i> End-to-end legal & documentation support</li>
+            <li><i class="fa-solid fa-circle-check"></i> Dedicated relationship managers for every buyer</li>
+          </ul>
+          <a href="#contact" class="btn btn-about-cta mt-3">Get in Touch <i
+              class="fa-solid fa-arrow-right ms-2"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section py-5">
+    <div class="container">
+      <div class="section-header text-center reveal">
+        <p class="section-tag">TESTIMONIALS</p>
+        <h2 class="section-title">What Our <span class="highlight">Clients Say</span></h2>
+      </div>
+      <div class="row g-4 mt-2">
+        {% for t in testimonials %}
+        <div
+          class="col-12 col-md-4 reveal{% if loop.index0 == 1 %} delay-1{% elif loop.index0 == 2 %} delay-2{% endif %}">
+          <div class="testi-card{% if t.featured %} featured-testi{% endif %}">
+            <div class="testi-stars">★★★★★</div>
+            <p>"{{ t.message }}"</p>
+            <div class="testi-author">
+              <div class="testi-avatar">{{ t.initials }}</div>
+              <div><strong>{{ t.name }}</strong><br /><small>{{ t.location }}</small></div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-section py-5" id="contact">
+    <div class="container">
+      <div class="section-header text-center reveal">
+        <p class="section-tag">GET IN TOUCH</p>
+        <h2 class="section-title">Contact <span class="highlight">Us</span></h2>
+        <p class="section-desc">We're here to help you find your perfect home</p>
+      </div>
+      <div class="row g-5 mt-1 justify-content-center">
+        <div class="col-12 col-lg-5 reveal">
+          <div class="contact-info">
+            <div class="ci-item"><i class="fa-solid fa-location-dot"></i>
+              <div><strong>Address</strong>
+                <p>SCO 45, Sector 17, Chandigarh – 160017</p>
+              </div>
+            </div>
+            <div class="ci-item"><i class="fa-solid fa-phone"></i>
+              <div><strong>Phone</strong>
+                <p>+91 98765 43210</p>
+              </div>
+            </div>
+            <div class="ci-item"><i class="fa-solid fa-envelope"></i>
+              <div><strong>Email</strong>
+                <p>hello@nestfind.in</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6 reveal delay-1">
+          <div class="contact-form-wrap">
+            <form id="contactForm" method="POST" action="/contact">
+              <input type="hidden" name="property_id" id="property_id" value="">
+              <input type="hidden" name="property_name" id="property_name" value="">
+              <input type="hidden" name="broker_id" id="broker_id" value="">
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <input type="text" name="name" id="contact_name" class="form-control cf-input" placeholder="Your Name"
+                    required />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <input type="email" name="email" id="contact_email" class="form-control cf-input"
+                    placeholder="Email Address" required />
+                </div>
+                <div class="col-12">
+                  <input type="tel" name="phone" id="contact_phone" class="form-control cf-input"
+                    placeholder="Phone Number" />
+                </div>
+                <div class="col-12">
+                  <select name="looking_for" class="form-select cf-input" required>
+                    <option value="">I'm looking for...</option>
+                    <option value="Buying a Property">Buying a Property</option>
+                    <option value="Renting a Property">Renting a Property</option>
+                    <option value="Selling a Property">Selling a Property</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <textarea name="message" id="contact_message" class="form-control cf-input" rows="4"
+                    placeholder="Your Message"></textarea>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-send w-100" id="contactSubmitBtn">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Send Message
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-12 col-md-4">
+          <div class="footer-brand">Nest<span>Find</span></div>
+          <p class="footer-about">Your trusted partner in finding the perfect home.</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <h6 class="footer-heading">Quick Links</h6>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+          </ul>
+        </div>
+        <div class="col-6 col-md-3">
+          <h6 class="footer-heading">Property Types</h6>
+          <ul class="footer-links">
+            <li><a href="#">Apartments</a></li>
+            <li><a href="#">Villas</a></li>
+            <li><a href="#">Studios</a></li>
+            <li><a href="#">Penthouses</a></li>
+          </ul>
+        </div>
+        <div class="col-12 col-md-3">
+          <h6 class="footer-heading">Newsletter</h6>
+          <p class="footer-nl-text">Get the latest listings delivered to your inbox.</p>
+          <div class="footer-nl"><input type="email" placeholder="Your email" /><button type="button"><i
+                class="fa-solid fa-arrow-right"></i></button></div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© {{ year }} NestFind. All rights reserved. Crafted with <i class="fa-solid fa-heart"></i> in Chandigarh.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Image Viewer Modal -->
+  <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center position-relative">
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+            data-bs-dismiss="modal" aria-label="Close"></button>
+          <img src="" id="expandedImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh; cursor: pointer;"
+            data-bs-dismiss="modal">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Property Details Modal -->
+  <div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="propertyModalLabel">Property Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="propertyModalBody">
+          <div class="text-center">
+            <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="contactBrokerBtn">Contact Broker</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    // This should only run on the HOME page
+    const savedProperty = localStorage.getItem('inquiryProperty');
+    console.log('Home page loaded - checking for saved property:', savedProperty);
+
+    if (savedProperty) {
+      try {
+        const property = JSON.parse(savedProperty);
+        console.log('Found property to pre-fill:', property);
+
+        // Find the hidden input fields
+        const propertyIdField = document.querySelector('input[name="property_id"]');
+        const propertyNameField = document.querySelector('input[name="property_name"]');
+        const brokerIdField = document.querySelector('input[name="broker_id"]');
+        const messageField = document.getElementById('contact_message');
+
+        console.log('Fields found:', {
+          propertyIdField: !!propertyIdField,
+          propertyNameField: !!propertyNameField,
+          brokerIdField: !!brokerIdField,
+          messageField: !!messageField
+        });
+
+        if (propertyIdField) propertyIdField.value = property.id || '';
+        if (propertyNameField) propertyNameField.value = property.name || '';
+        if (brokerIdField) brokerIdField.value = property.broker_id || '';
+        if (messageField && property.name) {
+          messageField.value = `I'm interested in "${property.name}". Please share more details.`;
+        }
+
+        // SCROLL TO CONTACT SECTION
+        const contactSection = document.getElementById('contact');
+        if (contactSection) {
+          setTimeout(() => {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            console.log('Scrolled to contact section');
+          }, 500);
+        }
+
+        // Clear after using
+        localStorage.removeItem('inquiryProperty');
+
+      } catch (error) {
+        console.error('Error parsing property:', error);
+      }
+    }
+  </script>
+</body>
+
+</html>

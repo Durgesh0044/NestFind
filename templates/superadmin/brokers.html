@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>Brokers Management — Super Admin | NestFind</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0B1F3A;
+            --navy-mid: #1A3558;
+            --gold: #C9A84C;
+            --gold-light: #E8C876;
+            --cream: #F8F6F0;
+            --grey: #6B7A99;
+            --grey-light: #E2E8F0;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #F8F6F0 0%, #F0EDE5 100%);
+            color: var(--navy);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar (same as dashboard) */
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: var(--white);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            padding: 1.8rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(201, 168, 76, 0.15);
+            transition: var(--transition);
+        }
+
+        .sidebar-logo {
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            color: var(--gold);
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--navy);
+        }
+
+        .logo-text span {
+            color: var(--gold);
+        }
+
+        .super-badge {
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--navy);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: inline-block;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            margin-top: 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            color: var(--grey);
+            margin-bottom: 0.8rem;
+            padding-left: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 14px;
+            color: var(--navy);
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 5px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--cream);
+            color: var(--gold);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(95deg, rgba(201, 168, 76, 0.12) 0%, rgba(201, 168, 76, 0.05) 100%);
+            color: var(--gold);
+            font-weight: 600;
+            border-left: 3px solid var(--gold);
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--grey-light);
+            padding-top: 1.2rem;
+            margin-top: auto;
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(145deg, var(--gold), var(--gold-light));
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .admin-info {
+            flex: 1;
+        }
+
+        .admin-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .admin-role {
+            font-size: 0.7rem;
+            color: var(--grey);
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 280px;
+            padding: 1.5rem 2rem 2rem 2rem;
+            min-height: 100vh;
+        }
+
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(201, 168, 76, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 0;
+        }
+
+        .stat-info p {
+            font-size: 0.7rem;
+            color: var(--grey);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(201, 168, 76, 0.1);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+
+        /* Search Section */
+        .search-section {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(201, 168, 76, 0.1);
+        }
+
+        .search-input {
+            border: 1px solid var(--grey-light);
+            border-radius: 14px;
+            padding: 0.7rem 1rem;
+            width: 100%;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        }
+
+        /* Broker Grid */
+        .broker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .broker-card {
+            background: var(--white);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid rgba(201, 168, 76, 0.1);
+        }
+
+        .broker-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .broker-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            padding: 1.2rem 1.2rem;
+            color: white;
+            position: relative;
+        }
+
+        .broker-avatar {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.8rem;
+        }
+
+        .broker-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .broker-email {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-blocked {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .toggle-icon {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .broker-card.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .broker-stats {
+            display: flex;
+            padding: 1rem 1.2rem;
+            background: var(--cream);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--grey);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .broker-content {
+            padding: 0 1.2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: var(--white);
+        }
+
+        .broker-card.expanded .broker-content {
+            max-height: 600px;
+            padding: 1rem 1.2rem 1.2rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .property-list, .lead-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .property-item, .lead-item {
+            background: var(--cream);
+            border-radius: 14px;
+            padding: 0.8rem;
+            margin-bottom: 0.6rem;
+            transition: var(--transition);
+        }
+
+        .property-item:hover, .lead-item:hover {
+            background: rgba(201, 168, 76, 0.1);
+            transform: translateX(3px);
+        }
+
+        .property-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--navy);
+        }
+
+        .property-location {
+            font-size: 0.65rem;
+            color: var(--grey);
+            margin-top: 2px;
+        }
+
+        .property-price {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-top: 4px;
+        }
+
+        .lead-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--navy);
+        }
+
+        .lead-email {
+            font-size: 0.65rem;
+            color: var(--grey);
+        }
+
+        .lead-status {
+            font-size: 0.6rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .status-New { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+        .status-Contacted { background: rgba(59, 130, 246, 0.12); color: var(--info); }
+        .status-Interested { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+        .status-Converted { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+        .view-all-link {
+            font-size: 0.7rem;
+            color: var(--gold);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 1rem;
+            color: var(--grey);
+            font-size: 0.75rem;
+        }
+
+        .btn-action {
+            background: var(--cream);
+            border: none;
+            border-radius: 40px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .btn-action:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-action-success {
+            background: var(--cream);
+        }
+
+        .btn-action-success:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Mobile */
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .broker-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1050;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .mobile-toggle {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1100;
+                background: var(--gold);
+                border: none;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                color: var(--navy);
+                box-shadow: var(--shadow-lg);
+                cursor: pointer;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+        }
+
+        .mobile-toggle {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div><div class="logo-text">Nest<span>Find</span></div></div>
+            </div>
+            <div class="logo-badge" style="margin-top:8px"><span class="super-badge">SUPER ADMIN</span></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('superadmin.super_admin_dashboard') }}" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+                <a href="{{ url_for('superadmin.super_admin_brokers') }}" class="nav-item active"><span class="icon">👥</span> Brokers</a>
+                <a href="{{ url_for('superadmin.super_admin_properties') }}" class="nav-item"><span class="icon">🏠</span> All Properties</a>
+                <a href="{{ url_for('superadmin.super_admin_leads') }}" class="nav-item"><span class="icon">📋</span> All Leads</a>
+                <a href="{{ url_for('superadmin.super_admin_activities') }}" class="nav-item"><span class="icon">📜</span> Activity Logs</a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info">
+                    <div class="admin-name">{{ admin_name }}</div>
+                    <div class="admin-role">Super Administrator</div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color: var(--grey); font-size: 1rem;" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="content">
+            <!-- Header -->
+            <div style="margin-bottom: 1.5rem;">
+                <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--navy);">
+                    <i class="fa-solid fa-users-viewfinder" style="color: var(--gold); margin-right: 10px;"></i>
+                    Brokers Management
+                </h1>
+                <p style="color: var(--grey);">View and manage all registered brokers, their properties, and leads</p>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>{{ broker_stats|length }}</h3>
+                        <p>Total Brokers</p>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-user-tie"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>{{ broker_stats|sum(attribute='total_properties') }}</h3>
+                        <p>Total Properties</p>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>{{ broker_stats|sum(attribute='total_leads') }}</h3>
+                        <p>Total Leads</p>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-envelope"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>{{ broker_stats|sum(attribute='new_leads') }}</h3>
+                        <p>New Leads</p>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" id="searchBroker" class="search-input" placeholder="🔍 Search by broker name, email, or phone...">
+                    </div>
+                    <div class="col-md-4">
+                        <select id="statusFilter" class="search-input">
+                            <option value="all">All Status</option>
+                            <option value="active">Active Brokers</option>
+                            <option value="blocked">Blocked Brokers</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brokers Grid -->
+            <div class="broker-grid" id="brokersGrid">
+                {% for stat in broker_stats %}
+                <div class="broker-card" data-broker-id="{{ stat.broker.broker_id }}" data-status="{{ 'active' if stat.broker.is_active else 'blocked' }}" data-name="{{ stat.broker.name|lower }}" data-email="{{ stat.broker.email|lower }}">
+                    <div class="broker-header" onclick="toggleBroker({{ stat.broker.broker_id }})">
+                        <div class="broker-avatar">{{ stat.broker.name[:2]|upper }}</div>
+                        <div class="broker-name">{{ stat.broker.name }}</div>
+                        <div class="broker-email">{{ stat.broker.email }}</div>
+                        <div class="status-badge {{ 'status-active' if stat.broker.is_active else 'status-blocked' }}">
+                            <i class="fa-solid {{ 'fa-circle' if stat.broker.is_active else 'fa-ban' }}"></i>
+                            {{ 'Active' if stat.broker.is_active else 'Blocked' }}
+                        </div>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    
+                    <div class="broker-stats">
+                        <div class="stat-item"><div class="stat-number">{{ stat.total_listings }}</div><div class="stat-label">Listings</div></div>
+                        <div class="stat-item"><div class="stat-number">{{ stat.total_properties }}</div><div class="stat-label">Active</div></div>
+                        <div class="stat-item"><div class="stat-number">{{ stat.total_leads }}</div><div class="stat-label">Leads</div></div>
+                        <div class="stat-item"><div class="stat-number">{{ stat.new_leads }}</div><div class="stat-label">New</div></div>
+                    </div>
+                    
+                    <div class="broker-content" id="broker-content-{{ stat.broker.broker_id }}">
+                        <!-- Properties Section -->
+                        <div class="section-title"><i class="fa-solid fa-building"></i> Recent Properties</div>
+                        <div class="property-list">
+                            {% if stat.recent_properties %}
+                                {% for prop in stat.recent_properties %}
+                                <div class="property-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="property-title">{{ prop.property[:40] }}{% if prop.property|length > 40 %}...{% endif %}</div>
+                                            <div class="property-location"><i class="fa-solid fa-location-dot"></i> {{ prop.location or 'N/A' }}</div>
+                                            <div class="property-price">{{ prop.price }}</div>
+                                        </div>
+                                        <a href="/property/{{ prop.id }}" target="_blank" style="color: var(--gold);"><i class="fa-solid fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if stat.total_listings > 5 %}
+                                <a href="{{ url_for('superadmin.super_admin_properties') }}?broker_id={{ stat.broker.broker_id }}" class="view-all-link">View all {{ stat.total_listings }} properties →</a>
+                                {% endif %}
+                            {% else %}
+                                <div class="empty-state"><i class="fa-regular fa-building"></i> No properties yet</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Leads Section -->
+                        <div class="section-title mt-3"><i class="fa-solid fa-envelope"></i> Recent Leads</div>
+                        <div class="lead-list">
+                            {% if stat.recent_leads %}
+                                {% for lead in stat.recent_leads %}
+                                <div class="lead-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="lead-name">{{ lead.name }}</div>
+                                            <div class="lead-email"><i class="fa-solid fa-envelope"></i> {{ lead.email }}</div>
+                                            <div class="lead-email"><i class="fa-solid fa-building"></i> {{ lead.property_name or 'General Inquiry' }}</div>
+                                        </div>
+                                        <span class="lead-status status-{{ lead.status }}">{{ lead.status }}</span>
+                                    </div>
+                                    <div class="mt-1"><small style="color: var(--grey); font-size: 0.6rem;"><i class="fa-regular fa-clock"></i> {{ lead.created_at.strftime('%b %d, %Y') if lead.created_at else 'N/A' }}</small></div>
+                                </div>
+                                {% endfor %}
+                                {% if stat.total_leads > 5 %}
+                                <a href="{{ url_for('superadmin.super_admin_leads') }}?broker_id={{ stat.broker.broker_id }}" class="view-all-link">View all {{ stat.total_leads }} leads →</a>
+                                {% endif %}
+                            {% else %}
+                                <div class="empty-state"><i class="fa-regular fa-envelope"></i> No leads yet</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-3">
+                            <button onclick="event.stopPropagation(); toggleBrokerStatus({{ stat.broker.broker_id }}, {{ 'true' if stat.broker.is_active else 'false' }})" 
+                                    class="btn-action {{ 'btn-action-success' if not stat.broker.is_active else '' }}" 
+                                    style="background: {{ '#EF4444' if stat.broker.is_active else '#10B981' }}; color: white;">
+                                <i class="fa-solid {{ 'fa-ban' if stat.broker.is_active else 'fa-check' }}"></i>
+                                {{ 'Block Broker' if stat.broker.is_active else 'Activate Broker' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+
+        // Toggle broker details
+        function toggleBroker(brokerId) {
+            const card = document.querySelector(`.broker-card[data-broker-id="${brokerId}"]`);
+            if (card) card.classList.toggle('expanded');
+        }
+        
+        // Toggle broker status with SweetAlert
+        function toggleBrokerStatus(brokerId, isActive) {
+            event.stopPropagation();
+            const action = isActive ? 'block' : 'activate';
+            const title = isActive ? 'Block Broker?' : 'Activate Broker?';
+            const text = isActive ? 'This broker will no longer be able to access the platform.' : 'This broker will regain full access to the platform.';
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: isActive ? '#EF4444' : '#10B981',
+                cancelButtonColor: '#6B7A99',
+                confirmButtonText: isActive ? 'Yes, block broker' : 'Yes, activate broker',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/super-admin/broker/toggle/${brokerId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: `Broker has been ${isActive ? 'blocked' : 'activated'} successfully.`,
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Error!', 'Failed to update broker status', 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error!', 'Something went wrong', 'error'));
+                }
+            });
+        }
+        
+        // Search and filter functionality
+        const searchInput = document.getElementById('searchBroker');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        function filterBrokers() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const cards = document.querySelectorAll('.broker-card');
+            
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                const email = card.dataset.email;
+                const status = card.dataset.status;
+                
+                const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+                const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
+                
+                card.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            });
+        }
+        
+        searchInput.addEventListener('input', filterBrokers);
+        statusFilter.addEventListener('change', filterBrokers);
+    </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NestFind Wallet - Admin Console</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    
+    <style>
+        /* Custom Wallet Dashboard styles */
+        .wallet-main {
+            padding: 2rem;
+            background-color: var(--body-bg);
+            min-height: 100vh;
+        }
+        .wallet-card {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .wallet-card * {
+            position: relative;
+            z-index: 1;
+        }
+        .wallet-balance-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 0.5rem;
+        }
+        .wallet-balance-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+        .deposit-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--grey-light);
+            height: 100%;
+        }
+        .deposit-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--navy);
+        }
+        .quick-amount-btn {
+            border: 1.5px solid var(--grey-mid);
+            background: transparent;
+            color: var(--navy);
+            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .quick-amount-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background-color: rgba(201, 168, 76, 0.05);
+        }
+        .deposit-input-group {
+            position: relative;
+            margin-top: 1.5rem;
+        }
+        .deposit-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 2.5rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--grey-mid);
+            font-size: 1.1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .deposit-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        }
+        .deposit-currency {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: var(--grey-dark);
+        }
+        .pay-btn {
+            background: var(--gold);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            width: 100%;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .pay-btn:hover {
+            background: var(--gold-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .pay-btn:disabled {
+            background: var(--grey-dark);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .history-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--grey-light);
+            margin-top: 2rem;
+        }
+        .txn-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .txn-credit {
+            background: #e6f7ed;
+            color: #28a745;
+        }
+        .txn-debit {
+            background: #fff1f0;
+            color: #ea384c;
+        }
+        .card-brand-logo {
+            position: absolute;
+            bottom: 2rem;
+            right: 2.5rem;
+            font-size: 2rem;
+            color: rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div>
+                    <div class="logo-text">Nest<span>Find</span></div>
+                </div>
+            </div>
+            <div class="logo-badge" style="margin-top:6px">Admin Console</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('admin.admin_leads') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">👥</span> Leads
+                    {% if new_leads_count > 0 %}
+                    <span class="nav-badge">{{ new_leads_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('api.favorites_page') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">❤️</span> Favorites
+                </a>
+                <a href="{{ url_for('admin.admin_wallet') }}" class="nav-item active" style="text-decoration: none;">
+                    <span class="icon">💳</span> Wallet
+                    <span class="ms-auto" style="font-size:0.75rem; color:var(--gold); font-weight:600; margin-left:auto;">₹{{ "{:,.0f}".format(current_user.wallet_balance or 0) }}</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Data Management</div>
+                <div class="nav-item" onclick="window.location.href='{{ url_for('admin.admin_dashboard') }}#upload-section'">
+                    <span class="icon">📄</span> Upload Files
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info">
+                    <div class="admin-name">{{ admin_name }}</div>
+                    <div class="admin-role">Broker</div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color:var(--grey-dark);font-size:14px" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">Manage Wallet</div>
+        </header>
+
+        <div class="content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert" style="border-radius: 12px; border: none;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <!-- Premium Balance Card -->
+                    <div class="wallet-card">
+                        <div class="wallet-balance-label">Current Balance</div>
+                        <div class="wallet-balance-val" id="current-balance-display">₹{{ "{:,.2f}".format(current_user.wallet_balance or 0.0) }}</div>
+                        
+                        <div style="display: flex; gap: 2rem; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.5rem;">
+                            <div>
+                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgba(255,255,255,0.5); margin-bottom: 2px;">Broker ID</div>
+                                <div style="font-size: 0.95rem; font-weight:600; letter-spacing: 1px;">#{{ current_user.broker_id }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgba(255,255,255,0.5); margin-bottom: 2px;">Status</div>
+                                <div style="font-size: 0.95rem; font-weight:600; display: flex; align-items:center; gap:5px;">
+                                    <span style="width:8px; height:8px; border-radius:50%; background: #28a745;"></span> Active
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-brand-logo"><i class="fa-brands fa-cc-stripe"></i></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <!-- Deposit Section -->
+                    <div class="deposit-section">
+                        <h3 class="deposit-title"><i class="fa-solid fa-credit-card" style="color:var(--gold); margin-right: 10px;"></i> Deposit Funds</h3>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="quick-amount-btn" onclick="setAmount(500)">+ ₹500</button>
+                            <button class="quick-amount-btn" onclick="setAmount(1000)">+ ₹1,000</button>
+                            <button class="quick-amount-btn" onclick="setAmount(2000)">+ ₹2,000</button>
+                            <button class="quick-amount-btn" onclick="setAmount(5000)">+ ₹5,000</button>
+                        </div>
+
+                        <div class="deposit-input-group">
+                            <span class="deposit-currency">₹</span>
+                            <input type="number" class="deposit-input" id="deposit-amount" placeholder="Enter custom amount" min="50" />
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--grey-dark); margin-top: 6px;">Minimum deposit: ₹50</div>
+
+                        <button class="pay-btn" id="pay-stripe-btn" onclick="initiateCheckout()">
+                            <i class="fa-solid fa-lock" style="font-size: 0.8rem;"></i> Pay securely with Stripe
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="history-section">
+                <h3 style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--navy);">
+                    Transaction Activity Log
+                </h3>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" style="margin-bottom:0;">
+                        <thead>
+                            <tr style="background: var(--grey-pale); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--grey-dark);">
+                                <th style="padding: 1rem; border:none;">ID</th>
+                                <th style="padding: 1rem; border:none;">Type</th>
+                                <th style="padding: 1rem; border:none;">Description</th>
+                                <th style="padding: 1rem; border:none;">Amount</th>
+                                <th style="padding: 1rem; border:none;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                            <tr style="font-size: 0.9rem; border-bottom: 1px solid var(--grey-light);">
+                                <td style="padding: 1rem; font-weight:600; color: var(--grey-dark);">#{{ txn.id }}</td>
+                                <td style="padding: 1rem;">
+                                    <span class="txn-badge {{ 'txn-credit' if txn.transaction_type == 'credit' else 'txn-debit' }}">
+                                        {{ txn.transaction_type }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem; font-weight:500; color: var(--navy);">{{ txn.description }}</td>
+                                <td style="padding: 1rem; font-weight:700; color: {{ '#28a745' if txn.transaction_type == 'credit' else '#ea384c' }}">
+                                    {{ '+' if txn.transaction_type == 'credit' else '-' }} ₹{{ "{:,.2f}".format(txn.amount) }}
+                                </td>
+                                <td style="padding: 1rem; color: var(--grey-dark); font-size: 0.85rem;">
+                                    {{ txn.created_at.strftime('%d %b, %Y %I:%M %p') }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 3rem; color: var(--grey-dark);">
+                                    <i class="fa-solid fa-receipt" style="font-size: 2rem; margin-bottom: 10px; display:block; opacity:0.5;"></i>
+                                    No transactions yet. Credits deposited or used will appear here.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function setAmount(val) {
+            document.getElementById('deposit-amount').value = val;
+        }
+
+        async function initiateCheckout() {
+            const amtInput = document.getElementById('deposit-amount');
+            const payBtn = document.getElementById('pay-stripe-btn');
+            const amt = parseFloat(amtInput.value);
+
+            if (!amt || amt < 50) {
+                alert("Please enter a valid amount (Minimum ₹50)");
+                return;
+            }
+
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting securely...';
+
+            try {
+                const res = await fetch('/admin/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: amt })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.checkout_url) {
+                    // Redirect user to the Stripe Checkout URL
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert("Stripe initialization failed: " + (data.message || "Unknown error"));
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay securely with Stripe';
+                }
+            } catch (err) {
+                console.error("Checkout error:", err);
+                alert("Network or server issue generating payment session.");
+                payBtn.disabled = false;
+                payBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay securely with Stripe';
+            }
+        }
+    </script>
+</body>
+</html>

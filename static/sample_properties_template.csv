@@ -1,0 +1,19 @@
+property,price,location,type,category,bedrooms,area,status
+Sunrise Villa,50 Lakhs,Sector 17 Chandigarh,For Sale,Villa / Bungalow,4 BHK,2500 sq ft,Active
+Azure Apartment,35000/mo,Mohali Phase 8,For Rent,Apartment / Flat,2 BHK,1100 sq ft,Active
+Green Heights,75 Lakhs,Panchkula Sector 5,For Sale,Apartment / Flat,3 BHK,1450 sq ft,Active
+Commercial Plaza,1.2 Cr,Zirakpur,For Sale,Commercial,5+ BHK,5000 sq ft,Active
+Studio Nest,18000/mo,Chandigarh Sector 35,For Rent,Studio,Studio,550 sq ft,Active
+
+# ============================================
+# COLUMN GUIDE:
+# ============================================
+# property    - Name of the property (REQUIRED)
+# price       - Price in formats: "50 Lakhs", "1.2 Cr", "25000/mo", "35000" (REQUIRED)
+# location    - Address or area name (OPTIONAL)
+# type        - "For Sale" or "For Rent" (OPTIONAL - defaults to "For Sale")
+# category    - "Apartment / Flat", "Villa / Bungalow", "Plot / Land", "Commercial", "Studio" (OPTIONAL)
+# bedrooms    - "1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK", "Studio" (OPTIONAL)
+# area        - Size in sq ft (OPTIONAL)
+# status      - "Active", "Sold", "Rented" (OPTIONAL - defaults to "Active")
+# ============================================

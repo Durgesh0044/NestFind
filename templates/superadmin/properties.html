@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>All Properties — Super Admin | NestFind</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        /* Same base styles - keeping consistency */
+        :root {
+            --navy: #0B1F3A;
+            --gold: #C9A84C;
+            --gold-light: #E8C876;
+            --cream: #F8F6F0;
+            --grey: #5A6E7A;
+            --grey-light: #E2E4E8;
+            --shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #F1EFEA; color: var(--navy); }
+        .sidebar { width: 280px; position: fixed; left: 0; top: 0; bottom: 0; background: white; padding: 2rem 1.2rem; display: flex; flex-direction: column; border-right: 1px solid rgba(201,168,76,0.2); transition: var(--transition); }
+        .sidebar-logo { margin-bottom: 2rem; }
+        .logo-mark { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { font-size: 2rem; color: var(--gold); }
+        .logo-text { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--navy); }
+        .logo-text span { color: var(--gold); }
+        .super-badge { background: linear-gradient(135deg, #C9A84C, #E8C876); color: #0B1F3A; padding: 4px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 800; display: inline-block; }
+        .sidebar-nav { flex: 1; margin-top: 1rem; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--grey); margin-bottom: 0.8rem; padding-left: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: 14px; color: var(--navy); font-weight: 500; transition: var(--transition); margin-bottom: 5px; text-decoration: none; }
+        .nav-item:hover { background: var(--cream); color: var(--gold); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(95deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.05) 100%); color: var(--gold); font-weight: 600; border-left: 3px solid var(--gold); }
+        .sidebar-footer { border-top: 1px solid var(--grey-light); padding-top: 1.2rem; margin-top: auto; }
+        .admin-card { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 42px; height: 42px; background: linear-gradient(145deg, var(--gold), var(--gold-light)); border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--navy); }
+        .admin-info { flex: 1; }
+        .admin-name { font-weight: 700; font-size: 0.85rem; }
+        .admin-role { font-size: 0.7rem; color: var(--grey); }
+        .main { margin-left: 280px; padding: 2rem; min-height: 100vh; }
+        .content { max-width: 1400px; margin: 0 auto; animation: fadeIn 0.5s ease; }
+        .card { border: none; border-radius: 28px; background: white; box-shadow: var(--shadow-sm); overflow: hidden; transition: var(--transition); }
+        .card:hover { box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1); }
+        .table th { font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--grey); padding: 1rem; }
+        .table td { vertical-align: middle; padding: 1rem; border-bottom: 1px solid var(--grey-light); }
+        .table tbody tr { transition: var(--transition); }
+        .table tbody tr:hover { background: rgba(248, 246, 240, 0.5); transform: scale(1.01); }
+        .search-input { border: 1px solid var(--grey-light); border-radius: 40px; padding: 8px 18px; font-size: 0.85rem; transition: var(--transition); }
+        .search-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1); }
+        .empty-state { text-align: center; padding: 4rem; }
+        .empty-state i { font-size: 4rem; color: var(--grey-light); margin-bottom: 1rem; }
+        .btn-danger { border-radius: 40px; padding: 5px 16px; transition: var(--transition); }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(214, 69, 61, 0.3); }
+        .badge-active { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 5px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; }
+        .badge-pending { background: linear-gradient(135deg, #ffc107, #ff9800); color: #2c3e50; padding: 5px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 1050; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 1rem; }
+            .mobile-toggle { display: block; position: fixed; bottom: 20px; right: 20px; z-index: 1100; background: var(--gold); border: none; width: 50px; height: 50px; border-radius: 50%; color: var(--navy); box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
+        }
+        .mobile-toggle { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-badge { background: var(--gold); color: var(--navy); padding: 8px 20px; border-radius: 40px; font-weight: 600; }
+        .price-tag { font-weight: 700; color: var(--gold); }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark"><span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span><div><div class="logo-text">Nest<span>Find</span></div></div></div>
+            <div class="logo-badge" style="margin-top:6px"><span class="super-badge">SUPER ADMIN</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('superadmin.super_admin_dashboard') }}" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+                <a href="{{ url_for('superadmin.super_admin_brokers') }}" class="nav-item"><span class="icon">👥</span> Brokers</a>
+                <a href="{{ url_for('superadmin.super_admin_properties') }}" class="nav-item active"><span class="icon">🏠</span> All Properties</a>
+                <a href="{{ url_for('superadmin.super_admin_leads') }}" class="nav-item"><span class="icon">📋</span> All Leads</a>
+                <a href="{{ url_for('superadmin.super_admin_activities') }}" class="nav-item"><span class="icon">📜</span> Activity Logs</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info"><div class="admin-name">{{ admin_name }}</div><div class="admin-role">Super Admin</div></div>
+                <a href="{{ url_for('auth.logout') }}" style="color:var(--grey-dark);font-size:14px"><i class="fa-solid fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--navy);">All Properties</h1>
+                    <p style="color: var(--grey);">View and manage all property listings across the platform</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <input type="text" id="searchProperty" class="search-input" placeholder="🔍 Search properties...">
+                    <select id="statusPropertyFilter" class="search-input">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                    <span class="stat-badge">Total: {{ properties|length }}</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
+                    <div style="overflow-x: auto;">
+                        <table class="table" id="propertiesTable">
+                            <thead style="background: var(--cream);">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Property</th>
+                                    <th>Broker</th>
+                                    <th>Price</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prop in properties %}
+                                <tr class="property-row" data-status="{{ prop.status }}" data-name="{{ prop.property|lower }}">
+                                    <td><strong>#{{ prop.id }}</strong></td>
+                                    <td>
+                                        <div style="font-weight: 600;">{{ prop.property[:50] }}</div>
+                                        {% if prop.property|length > 50 %}<div style="font-size: 0.7rem; color: var(--grey);">...</div>{% endif %}
+                                    </td>
+                                    <td>
+                                        <div><i class="fa-solid fa-user-tie" style="color: var(--gold);"></i> {{ prop.broker_info.name if prop.broker_info else 'N/A' }}</div>
+                                    </td>
+                                    <td><span class="price-tag">{{ prop.price }}</span></td>
+                                    <td>
+                                        <div><i class="fa-solid fa-location-dot" style="color: var(--gold);"></i> {{ prop.location or 'N/A' }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="{% if prop.status == 'Active' %}badge-active{% else %}badge-pending{% endif %}">
+                                            <i class="fa-solid fa-{% if prop.status == 'Active' %}check-circle{% else %}clock{% endif %}"></i> {{ prop.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 0.75rem; color: var(--grey);">
+                                            <i class="fa-regular fa-calendar"></i> {{ prop.created_at.strftime('%Y-%m-%d') if prop.created_at else 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger delete-property-btn" data-id="{{ prop.id }}">
+                                            <i class="fa-solid fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-building-circle-exclamation"></i>
+                                            <h4 style="color: var(--grey);">No properties found</h4>
+                                            <p style="color: var(--grey-light);">Properties added by brokers will appear here</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+
+        // Delete property with SweetAlert confirmation
+        function deleteProperty(propertyId) {
+            Swal.fire({
+                title: 'Delete Property?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#5A6E7A',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/super-admin/property/delete/${propertyId}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: 'Property has been deleted.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Failed to delete property', 'error');
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire('Error!', 'Something went wrong', 'error');
+                    });
+                }
+            });
+        }
+
+        // Attach delete event listeners
+        document.querySelectorAll('.delete-property-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteProperty(parseInt(btn.dataset.id));
+            });
+        });
+
+        // Search and filter functionality
+        const searchInput = document.getElementById('searchProperty');
+        const statusFilter = document.getElementById('statusPropertyFilter');
+        const rows = document.querySelectorAll('.property-row');
+
+        function filterProperties() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedStatus = statusFilter.value;
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const status = row.dataset.status;
+                const matchesSearch = text.includes(searchTerm);
+                const matchesStatus = !selectedStatus || status === selectedStatus;
+                
+                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterProperties);
+        if (statusFilter) statusFilter.addEventListener('change', filterProperties);
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Properties | NestFind Luxury Real Estate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=Outfit:wght@300;400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <style>
+    :root {
+      --gold: #C49A3C;
+      --navy: #0D1B2A;
+      --grey: #E0E1DD;
+    }
+
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .page-header {
+      background: linear-gradient(rgba(13, 27, 42, 0.8), rgba(13, 27, 42, 0.8)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600');
+      background-size: cover;
+      background-position: center;
+      padding: 100px 0;
+      color: white;
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .btn-back {
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      transition: all 0.3s;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .btn-back:hover {
+      background: white;
+      color: var(--navy);
+    }
+
+    .apt-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .apt-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="page-header">
+    <div class="container">
+      <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-2"></i> Back to Home</a>
+
+      {% if portfolio_broker %}
+      <h1 class="display-4 font-serif" style="font-family: 'Playfair Display', serif;">Portfolio of <span
+          style="color: var(--gold);">{{ portfolio_broker.name }}</span></h1>
+      <p class="lead">Curated listed by our exclusive agent</p>
+      <div class="mt-3 d-inline-block px-4 py-2 bg-white rounded-pill shadow-sm">
+        <a href="tel:{{ portfolio_broker.phone }}" class="text-navy text-decoration-none fw-bold"
+          style="color: var(--navy);">
+          <i class="fa-solid fa-phone me-2 text-gold" style="color: var(--gold);"></i> {{ portfolio_broker.phone or
+          'Contact Agent' }}
+        </a>
+      </div>
+      {% else %}
+      <h1 class="display-4 font-serif" style="font-family: 'Playfair Display', serif;">Exclusive <span
+          style="color: var(--gold);">Properties</span></h1>
+      <p class="lead">Discover your dream home in our curated collection</p>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="container mb-5">
+    <div class="row g-4">
+      {% if properties %}
+      {% for apt in properties %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="apt-card shadow-sm border-0 rounded-4 overflow-hidden h-100 bg-white"
+          data-property-id="{{ apt.id }}" onclick="viewPropertyDetails(this, event)" style="cursor: pointer;">
+          <div class="apt-img position-relative" style="height: 250px;">
+            {% if apt.images and apt.images|length > 0 %}
+            {% if apt.images|length > 1 %}
+            <div id="carousel-apt-{{ apt.id }}" class="carousel slide h-100" data-bs-ride="carousel">
+              <div class="carousel-inner h-100">
+                {% for img in apt.images %}
+                <div class="carousel-item h-100 {% if loop.first %}active{% endif %}">
+                  <div class="w-100 h-100"
+                    style="background-image:url('{{ img }}'); background-size:cover; background-position:center;"></div>
+                </div>
+                {% endfor %}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carousel-apt-{{ apt.id }}"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carousel-apt-{{ apt.id }}"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="width: 20px; height: 20px;"></span>
+              </button>
+            </div>
+            {% else %}
+            <div class="w-100 h-100"
+              style="background-image:url('{{ apt.images[0] }}'); background-size:cover; background-position:center;">
+            </div>
+            {% endif %}
+            {% elif apt.image %}
+            <div class="w-100 h-100"
+              style="background-image:url('{{ apt.image }}'); background-size:cover; background-position:center;"></div>
+            {% else %}
+            <div class="w-100 h-100"
+              style="background-color: #f4f5f7; display:flex; align-items:center; justify-content:center; color:#6c757d; font-weight:600;">
+              No Image Available</div>
+            {% endif %}
+            <span
+              class="position-absolute top-0 start-0 m-3 badge {% if apt.badge_class == 'sale' %}bg-danger{% else %}bg-success{% endif %} rounded-pill px-3 py-2"
+              style="z-index: 5;">{{ apt.badge }}</span>
+            <button type="button" class="favorite-btn" onclick="toggleFavorite(event, {{ apt.id }})"
+              data-property-id="{{ apt.id }}"
+              style="position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: white; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <i class="fa-regular fa-heart" style="font-size: 1rem;"></i>
+            </button>
+          </div>
+          <div class="apt-body p-4">
+            <div class="apt-price h4 fw-bold text-navy" style="color: var(--navy);">{{ apt.price }}</div>
+            <h5 class="apt-name mb-2">{{ apt.name }}</h5>
+            <p class="apt-loc text-muted small mb-3"><i class="fa-solid fa-location-dot me-1"></i> {{ apt.location }}
+            </p>
+            <div class="apt-meta d-flex justify-content-between p-2 rounded bg-light mb-3">
+              <span class="small"><i class="fa-solid fa-bed me-1" style="color: var(--gold);"></i> {{ apt.beds }}
+                Beds</span>
+              <span class="small"><i class="fa-solid fa-bath me-1" style="color: var(--gold);"></i> {{ apt.baths }}
+                Baths</span>
+              <span class="small"><i class="fa-solid fa-vector-square me-1" style="color: var(--gold);"></i> {{ apt.sqft
+                }}</span>
+            </div>
+
+            <div class="mb-3 p-2 border rounded-3 d-flex justify-content-between align-items-center bg-white">
+              <div class="small">
+                <div class="text-muted" style="font-size: 0.7rem;">LISTED BY</div>
+                <div class="fw-bold" style="font-size: 0.85rem; color: var(--navy);">{{ apt.broker_name }}</div>
+              </div>
+              <a href="tel:{{ apt.broker_phone }}" class="btn btn-sm btn-outline-gold px-3"
+                style="border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--gold); color: var(--gold); text-decoration: none;">
+                <i class="fa-solid fa-phone me-1"></i> Call
+              </a>
+            </div>
+
+            <button type="button" class="btn w-100"
+              style="background: var(--navy); color: white; border-radius: 10px; padding: 12px;"
+              onclick="window.location.href='/#contact'">Inquire Now</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="col-12 text-center py-5">
+        <i class="fa-solid fa-house-circle-exclamation display-1 text-muted mb-4"></i>
+        <h3>No properties found</h3>
+        <p class="text-muted">Stay tuned! We are adding new listings regularly.</p>
+        <a href="/" class="btn mt-3" style="background: var(--gold); color: white;">Return to Home</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <footer class="py-5 bg-dark text-white text-center">
+    <div class="container">
+      <p class="mb-0 text-muted">&copy; 2026 NestFind Luxury Real Estate. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Property Details Modal -->
+  <div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyModalLabel" aria-hidden="true"
+    style="z-index: 1050;">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white">
+          <h5 class="modal-title" id="propertyModalLabel">Property Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" id="propertyModalBody">
+          <!-- Property details will be loaded here -->
+          <div class="text-center py-5">
+            <div class="spinner-border text-gold" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+          <a href="/#contact" class="btn btn-primary rounded-pill px-4 bg-navy border-0" id="contactBrokerBtn">Inquire
+            Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Viewer Modal -->
+  <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body p-0 text-center position-relative">
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+            data-bs-dismiss="modal" aria-label="Close"
+            style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); z-index: 10;"></button>
+          <img src="" id="expandedImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh; cursor: pointer;"
+            data-bs-dismiss="modal">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+  <script>
+    // Property inquiry handling
+    document.querySelectorAll('.apt-card').forEach(card => {
+      const inquireBtn = card.querySelector('.btn');
+      if (inquireBtn && inquireBtn.textContent.includes('Inquire')) {
+        const propertyId = card.getAttribute('data-property-id');
+        const propertyName = card.querySelector('.apt-name')?.textContent || '';
+        const brokerName = card.querySelector('.fw-bold')?.textContent || '';
+
+        inquireBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Store property info
+          const propertyInfo = {
+            id: propertyId,
+            name: propertyName,
+            broker_name: brokerName
+          };
+          localStorage.setItem('inquiryProperty', JSON.stringify(propertyInfo));
+          window.location.href = '/#contact';
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

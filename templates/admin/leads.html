@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NestFind — Lead Management | CRM</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        /* Premium Lead Page Styles - Eye Catching */
+        .pagination-btn-premium {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #e1e4ea;
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0B1F3A;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+        }
+
+        .pagination-btn-premium:hover:not(:disabled) {
+            background: rgba(201, 168, 76, 0.1);
+            border-color: #C9A84C;
+            color: #0B1F3A;
+        }
+
+        .pagination-btn-premium.active {
+            background: #C9A84C;
+            color: white;
+            border-color: #C9A84C;
+            box-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+        }
+
+        .pagination-btn-premium:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #F8F6F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Hero Banner */
+        .leads-hero {
+            background: linear-gradient(135deg, #0B1F3A 0%, #1A3558 50%, #0B1F3A 100%);
+            padding: 2.5rem 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leads-hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .leads-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #C9A84C;
+        }
+
+        .hero-stat-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Modern Stats Cards */
+        .modern-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .modern-stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #E8ECF4;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modern-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #C9A84C;
+        }
+
+        .modern-stat-card.active {
+            border-color: #C9A84C;
+            background: linear-gradient(135deg, #fff, rgba(201, 168, 76, 0.05));
+        }
+
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            background: #F8F6F0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .modern-stat-card:nth-child(1) .stat-card-icon i {
+            color: #C9A84C;
+            font-size: 1.3rem;
+        }
+
+        .modern-stat-card:nth-child(2) .stat-card-icon i {
+            color: #ffc107;
+            font-size: 1.3rem;
+        }
+
+        .modern-stat-card:nth-child(3) .stat-card-icon i {
+            color: #17a2b8;
+            font-size: 1.3rem;
+        }
+
+        .modern-stat-card:nth-child(4) .stat-card-icon i {
+            color: #28a745;
+            font-size: 1.3rem;
+        }
+
+        .modern-stat-card:nth-child(5) .stat-card-icon i {
+            color: #007bff;
+            font-size: 1.3rem;
+        }
+
+        .stat-card-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0B1F3A;
+            line-height: 1;
+        }
+
+        .stat-card-label {
+            font-size: 0.7rem;
+            color: #6B7A99;
+            margin-top: 0.3rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Modern Search Bar */
+        .modern-search-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E8ECF4;
+        }
+
+        .search-wrapper {
+            flex: 2;
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7A99;
+        }
+
+        .search-input-modern {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            border: 1px solid #E8ECF4;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .search-input-modern:focus {
+            outline: none;
+            border-color: #C9A84C;
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        }
+
+        .filter-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn-modern {
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #F8F6F0;
+            border: none;
+            color: #6B7A99;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn-modern:hover {
+            background: #C9A84C;
+            color: white;
+        }
+
+        .filter-btn-modern.active {
+            background: #C9A84C;
+            color: white;
+            box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+        }
+
+        /* Modern Table */
+        .modern-table-wrapper {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
+            text-align: left;
+            padding: 1rem 1.2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6B7A99;
+            background: #F8F6F0;
+            border-bottom: 2px solid #E8ECF4;
+        }
+
+        .modern-table td {
+            padding: 1rem 1.2rem;
+            font-size: 0.85rem;
+            color: #0B1F3A;
+            border-bottom: 1px solid #E8ECF4;
+            vertical-align: middle;
+        }
+
+        .modern-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .modern-table tr {
+            transition: all 0.2s;
+        }
+
+        .modern-table tr:hover {
+            background: rgba(201, 168, 76, 0.04);
+        }
+
+        /* Avatar Modern */
+        .avatar-modern {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #0B1F3A, #1A3558);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #C9A84C;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .customer-info-modern {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .customer-name-modern {
+            font-weight: 700;
+            color: #0B1F3A;
+            font-size: 0.9rem;
+        }
+
+        /* Contact Details Modern */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #6B7A99;
+            margin-bottom: 0.3rem;
+        }
+
+        .contact-item i {
+            width: 18px;
+            color: #C9A84C;
+        }
+
+        /* Property Badge Modern */
+        .property-tag {
+            background: #F8F6F0;
+            padding: 0.3rem 1rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #0B1F3A;
+            display: inline-block;
+        }
+
+        .message-preview {
+            font-size: 0.7rem;
+            color: #6B7A99;
+            margin-top: 0.3rem;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Status Badges Modern */
+        .status-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background: rgba(255, 193, 7, 0.12);
+            color: #b8860b;
+        }
+
+        .status-contacted {
+            background: rgba(23, 162, 184, 0.12);
+            color: #138496;
+        }
+
+        .status-interested {
+            background: rgba(40, 167, 69, 0.12);
+            color: #28a745;
+        }
+
+        .status-converted {
+            background: rgba(0, 123, 255, 0.12);
+            color: #0056b3;
+        }
+
+        .status-lost {
+            background: rgba(108, 117, 125, 0.12);
+            color: #6c757d;
+        }
+
+        /* Source Badge Modern */
+        .source-modern {
+            background: #F8F6F0;
+            padding: 0.3rem 1rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            color: #6B7A99;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Action Buttons Modern */
+        .action-group-modern {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn-modern {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: none;
+            background: #F8F6F0;
+            color: #6B7A99;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn-modern:hover {
+            background: #C9A84C;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .status-select-modern {
+            padding: 0.4rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid #E8ECF4;
+            font-size: 0.7rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .status-select-modern:focus {
+            outline: none;
+            border-color: #C9A84C;
+        }
+
+        /* Time Badge */
+        .time-modern {
+            font-size: 0.7rem;
+            color: #6B7A99;
+            background: #F8F6F0;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Empty State Modern */
+        .empty-state-modern {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon-modern {
+            width: 80px;
+            height: 80px;
+            background: #F8F6F0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: #C9A84C;
+        }
+
+        @media (max-width: 1200px) {
+            .modern-stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modern-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div>
+                    <div class="logo-text">Nest<span>Find</span></div>
+                </div>
+            </div>
+            <div class="logo-badge" style="margin-top:6px">CRM Portal</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('admin.admin_leads') }}" class="nav-item active">
+                    <span class="icon">👥</span> Leads
+                    {% if new_count > 0 %}
+                    <span class="nav-badge">{{ new_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('api.favorites_page') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">❤️</span> Favorites
+                </a>
+                <a href="{{ url_for('admin.admin_wallet') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">💳</span> Wallet
+                    <span class="ms-auto"
+                        style="font-size:0.75rem; color:var(--gold); font-weight:600; margin-left:auto;">₹{{
+                        "{:,.0f}".format(current_user.wallet_balance or 0) }}</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Data Management</div>
+                <div class="nav-item"
+                    onclick="window.location.href='{{ url_for('admin.admin_dashboard') }}#upload-section'">
+                    <span class="icon">📄</span> Upload Files
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info">
+                    <div class="admin-name">{{ admin_name }}</div>
+                    <div class="admin-role">Broker</div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color:var(--grey-dark);font-size:14px" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="content">
+            <!-- Eye-Catching Hero Banner -->
+            <div class="leads-hero">
+                <div class="hero-title">Lead Management</div>
+                <div class="hero-subtitle">Track, manage and convert your customer inquiries into successful deals</div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-number">{{ leads|length }}</div>
+                        <div class="hero-stat-label">Total Leads</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number">{{ new_count }}</div>
+                        <div class="hero-stat-label">New</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number">{{ contacted_count }}</div>
+                        <div class="hero-stat-label">Contacted</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number">{{ interested_count }}</div>
+                        <div class="hero-stat-label">Interested</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-number">{{ converted_count }}</div>
+                        <div class="hero-stat-label">Converted</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Stats Cards -->
+            <div class="modern-stats-grid">
+                <div class="modern-stat-card" onclick="filterLeads('all')" id="statAll">
+                    <div class="stat-card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="stat-card-value">{{ leads|length }}</div>
+                    <div class="stat-card-label">All Leads</div>
+                </div>
+                <div class="modern-stat-card" onclick="filterLeads('New')" id="statNew">
+                    <div class="stat-card-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="stat-card-value">{{ new_count }}</div>
+                    <div class="stat-card-label">New</div>
+                </div>
+                <div class="modern-stat-card" onclick="filterLeads('Contacted')" id="statContacted">
+                    <div class="stat-card-icon"><i class="fa-solid fa-phone"></i></div>
+                    <div class="stat-card-value">{{ contacted_count }}</div>
+                    <div class="stat-card-label">Contacted</div>
+                </div>
+                <div class="modern-stat-card" onclick="filterLeads('Interested')" id="statInterested">
+                    <div class="stat-card-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="stat-card-value">{{ interested_count }}</div>
+                    <div class="stat-card-label">Interested</div>
+                </div>
+                <div class="modern-stat-card" onclick="filterLeads('Converted')" id="statConverted">
+                    <div class="stat-card-icon"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="stat-card-value">{{ converted_count }}</div>
+                    <div class="stat-card-label">Converted</div>
+                </div>
+            </div>
+
+            <!-- Modern Search Bar -->
+            <div class="modern-search-bar">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" class="search-input-modern"
+                        placeholder="Search by name, email, or property...">
+                </div>
+                <div class="filter-wrapper">
+                    <button class="filter-btn-modern active" onclick="setFilterChip(this, 'all')">All</button>
+                    <button class="filter-btn-modern" onclick="setFilterChip(this, 'New')">🟡 New</button>
+                    <button class="filter-btn-modern" onclick="setFilterChip(this, 'Contacted')">📞 Contacted</button>
+                    <button class="filter-btn-modern" onclick="setFilterChip(this, 'Interested')">⭐ Interested</button>
+                    <button class="filter-btn-modern" onclick="setFilterChip(this, 'Converted')">✅ Converted</button>
+                    <button class="filter-btn-modern" onclick="setFilterChip(this, 'Lost')">❌ Lost</button>
+                </div>
+            </div>
+
+            <!-- Modern Table -->
+            <div class="modern-table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Contact</th>
+                            <th>Property Interest</th>
+                            <th>Status</th>
+                            <th>Source</th>
+                            <th>Received</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsTableBody">
+                        {% for lead in leads %}
+                        <tr data-lead-status="{{ lead.status }}">
+                            <td>
+                                <div class="customer-info-modern">
+                                    <div class="avatar-modern">{{ lead.name[:2]|upper }}</div>
+                                    <div class="customer-name-modern">{{ lead.name }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if lead.is_unlocked %}
+                                <!-- Show full contact info -->
+                                <div class="contact-item">
+                                    <i class="fa-solid fa-envelope" style="color: #28a745;"></i>
+                                    <span>{{ lead.email }}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fa-solid fa-phone" style="color: #28a745;"></i>
+                                    <span>{{ lead.phone or 'N/A' }}</span>
+                                </div>
+                                {% else %}
+                                <!-- Show locked contact info with unlock button -->
+                                <div class="locked-contact-container" id="lock-container-{{ lead.id }}"
+                                    style="position:relative; padding: 5px; background: rgba(201, 168, 76, 0.02); border-radius: 8px; border: 1px dashed rgba(201, 168, 76, 0.2);">
+                                    <div class="contact-item"
+                                        style="filter: blur(3px); user-select: none; opacity: 0.4; pointer-events: none;">
+                                        <i class="fa-solid fa-envelope"></i>
+                                        <span>{{ lead.email[:3] }}***@***{{ lead.email.split('@')[-1] if '@' in
+                                            lead.email else 'com' }}</span>
+                                    </div>
+                                    <div class="contact-item"
+                                        style="filter: blur(3px); user-select: none; opacity: 0.4; pointer-events: none;">
+                                        <i class="fa-solid fa-phone"></i>
+                                        <span>+91 XXXXX XXXXX</span>
+                                    </div>
+                                    <button class="unlock-btn-premium" onclick="unlockLead({{ lead.id }})"
+                                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--gold); color: white; border: none; border-radius: 20px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 8px rgba(201, 168, 76, 0.4); cursor: pointer; white-space: nowrap; z-index: 5; transition:all 0.2s;">
+                                        <i class="fa-solid fa-lock" style="font-size:0.7rem; margin-right:4px;"></i>
+                                        Unlock (₹50)
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="property-tag">{{ lead.property_name or 'General Inquiry' }}</span>
+                                {% if lead.message %}
+                                <div class="message-preview" title="{{ lead.message }}">
+                                    {{ lead.message[:45] }}{% if lead.message|length > 45 %}...{% endif %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-modern status-{{ lead.status|lower }}">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i>
+                                    {{ lead.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="source-modern">
+                                    <i
+                                        class="fa-solid fa-{{ 'file-lines' if lead.source == 'Contact Form' else 'link' }}"></i>
+                                    {{ lead.source }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="time-modern">{{ lead.time_ago }}</span>
+                            </td>
+                            <td>
+                                <div class="action-group-modern">
+                                    <select class="status-select-modern"
+                                        onchange="updateLeadStatus({{ lead.id }}, this.value)">
+                                        <option value="New" {% if lead.status=='New' %}selected{% endif %}>🟡 New
+                                        </option>
+                                        <option value="Contacted" {% if lead.status=='Contacted' %}selected{% endif %}>
+                                            📞 Contacted</option>
+                                        <option value="Interested" {% if lead.status=='Interested' %}selected{% endif
+                                            %}>⭐ Interested</option>
+                                        <option value="Converted" {% if lead.status=='Converted' %}selected{% endif %}>✅
+                                            Converted</option>
+                                        <option value="Lost" {% if lead.status=='Lost' %}selected{% endif %}>❌ Lost
+                                        </option>
+                                    </select>
+                                    <button class="action-btn-modern" title="Call"
+                                        onclick="callLead('{{ lead.phone }}')">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </button>
+                                    <button class="action-btn-modern" title="WhatsApp"
+                                        onclick="whatsappLead('{{ lead.phone }}', '{{ lead.name }}', '{{ lead.property_name }}')">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </button>
+                                    <button class="action-btn-modern" title="View Details"
+                                        onclick="viewLeadDetails({{ lead.id }})">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state-modern">
+                                    <div class="empty-icon-modern">
+                                        <i class="fa-regular fa-message"></i>
+                                    </div>
+                                    <h5 style="color: #0B1F3A; margin-bottom: 0.5rem;">No leads yet</h5>
+                                    <p style="color: #6B7A99;">When customers inquire about your properties, they'll
+                                        appear here.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Dynamic Leads Pagination -->
+            <div id="leadsPagination"
+                style="display: none; justify-content: space-between; align-items: center; padding: 15px 24px; background: white; border-top: 1px solid #EFF1F6; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
+                <div class="pagination-info" style="font-size: 0.85rem; color: #6B7A99; font-weight: 500;"></div>
+                <div class="pagination-controls" style="display: flex; gap: 6px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let currentStatusFilter = 'all';
+
+        function updateLeadStatus(leadId, status) {
+            fetch('/admin/api/lead/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lead_id: leadId, status: status })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: `Lead status changed to ${status}`,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                    }
+                });
+        }
+
+        function callLead(phone) {
+            if (phone && phone !== 'N/A') {
+                window.location.href = `tel:${phone}`;
+            } else {
+                Swal.fire({ icon: 'error', title: 'No Phone Number', text: 'Phone number not available for this lead.' });
+            }
+        }
+
+        function whatsappLead(phone, name, property) {
+            if (phone && phone !== 'N/A') {
+                const cleanPhone = phone.replace(/\D/g, '');
+                const message = `Hi ${name}, I'm following up on your inquiry about "${property || 'property'}". Would you like to schedule a site visit?`;
+                window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+            } else {
+                Swal.fire({ icon: 'error', title: 'No Phone Number', text: 'Phone number not available for WhatsApp.' });
+            }
+        }
+
+        function viewLeadDetails(leadId) {
+            fetch(`/admin/api/lead/${leadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire({
+                        title: `<i class="fa-solid fa-user"></i> ${data.name}`,
+                        html: `
+                            <div style="text-align: left;">
+                                <div style="background: #F8F6F0; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                                    <p><strong><i class="fa-solid fa-envelope" style="color: #C9A84C;"></i> Email:</strong> ${data.email}</p>
+                                    <p><strong><i class="fa-solid fa-phone" style="color: #C9A84C;"></i> Phone:</strong> ${data.phone || 'N/A'}</p>
+                                    <p><strong><i class="fa-solid fa-building" style="color: #C9A84C;"></i> Property:</strong> ${data.property_name || 'General Inquiry'}</p>
+                                    <p><strong><i class="fa-solid fa-globe" style="color: #C9A84C;"></i> Source:</strong> ${data.source}</p>
+                                    <p><strong><i class="fa-regular fa-clock" style="color: #C9A84C;"></i> Received:</strong> ${data.time}</p>
+                                </div>
+                                <div>
+                                    <strong><i class="fa-solid fa-comment"></i> Message:</strong>
+                                    <p style="margin-top: 0.5rem; padding: 0.8rem; background: #F8F6F0; border-radius: 10px; border-left: 3px solid #C9A84C;">
+                                        "${data.message || 'No message provided'}"
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'Close',
+                        confirmButtonColor: '#C9A84C',
+                        width: '500px'
+                    });
+                });
+        }
+
+        // Unified Paginated Lead Filtering logic
+        let leadsCurrentPage = 1;
+        const leadsItemsPerPage = 5;
+
+        function refreshLeadsList(resetPage = true) {
+            if (resetPage) {
+                leadsCurrentPage = 1;
+            }
+
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const statusFilter = currentStatusFilter || 'all';
+            const rows = document.querySelectorAll('#leadsTableBody tr');
+            const matchedRows = [];
+
+            rows.forEach(row => {
+                const status = row.getAttribute('data-lead-status');
+                if (!status) return; // Ignore the "No leads" empty state row if present
+
+                let matches = true;
+
+                // 1. Validate Status Filter
+                if (statusFilter !== 'all' && status !== statusFilter) {
+                    matches = false;
+                }
+
+                // 2. Validate Live Search Text
+                if (matches && searchTerm) {
+                    const text = row.innerText.toLowerCase();
+                    if (!text.includes(searchTerm)) {
+                        matches = false;
+                    }
+                }
+
+                if (matches) {
+                    matchedRows.push(row);
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Compute pagination dimensions
+            const totalMatched = matchedRows.length;
+            const totalPages = Math.ceil(totalMatched / leadsItemsPerPage) || 1;
+
+            if (leadsCurrentPage > totalPages) leadsCurrentPage = totalPages;
+            if (leadsCurrentPage < 1) leadsCurrentPage = 1;
+
+            // Render only rows belonging to current slice
+            matchedRows.forEach((row, index) => {
+                const start = (leadsCurrentPage - 1) * leadsItemsPerPage;
+                const end = start + leadsItemsPerPage;
+                if (index >= start && index < end) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update dashboard stat-cards highlight logic
+            document.querySelectorAll('.modern-stat-card').forEach(card => card.classList.remove('active'));
+            if (statusFilter === 'all') document.getElementById('statAll')?.classList.add('active');
+            if (statusFilter === 'New') document.getElementById('statNew')?.classList.add('active');
+            if (statusFilter === 'Contacted') document.getElementById('statContacted')?.classList.add('active');
+            if (statusFilter === 'Interested') document.getElementById('statInterested')?.classList.add('active');
+            if (statusFilter === 'Converted') document.getElementById('statConverted')?.classList.add('active');
+
+            // Render controls dynamically
+            renderLeadsPagination(totalMatched, totalPages);
+        }
+
+        function renderLeadsPagination(totalMatched, totalPages) {
+            const container = document.getElementById('leadsPagination');
+            if (!container) return;
+
+            if (totalMatched === 0) {
+                container.style.setProperty('display', 'none', 'important');
+                return;
+            }
+            container.style.setProperty('display', 'flex', 'important');
+
+            const infoBox = container.querySelector('.pagination-info');
+            const controlsBox = container.querySelector('.pagination-controls');
+
+            const startIdx = totalMatched === 0 ? 0 : ((leadsCurrentPage - 1) * leadsItemsPerPage) + 1;
+            const endIdx = Math.min(leadsCurrentPage * leadsItemsPerPage, totalMatched);
+
+            if (infoBox) {
+                infoBox.innerHTML = `Showing <strong>${startIdx} - ${endIdx}</strong> of <strong>${totalMatched}</strong> leads`;
+            }
+
+            if (controlsBox) {
+                let html = '';
+
+                // Previous Button
+                html += `<button class="pagination-btn-premium" ${leadsCurrentPage === 1 ? 'disabled' : ''} onclick="changeLeadsPage(${leadsCurrentPage - 1})"><i class="fa-solid fa-chevron-left" style="font-size:0.7rem"></i></button>`;
+
+                // Numeric Page Buttons
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= leadsCurrentPage - 1 && i <= leadsCurrentPage + 1)) {
+                        html += `<button class="pagination-btn-premium ${i === leadsCurrentPage ? 'active' : ''}" onclick="changeLeadsPage(${i})">${i}</button>`;
+                    } else if (i === leadsCurrentPage - 2 || i === leadsCurrentPage + 2) {
+                        html += `<span style="align-self:center; padding: 0 4px; color:#6B7A99;">...</span>`;
+                    }
+                }
+
+                // Next Button
+                html += `<button class="pagination-btn-premium" ${leadsCurrentPage === totalPages ? 'disabled' : ''} onclick="changeLeadsPage(${leadsCurrentPage + 1})"><i class="fa-solid fa-chevron-right" style="font-size:0.7rem"></i></button>`;
+
+                controlsBox.innerHTML = html;
+            }
+        }
+
+        window.changeLeadsPage = function (pageNum) {
+            leadsCurrentPage = pageNum;
+            refreshLeadsList(false);
+        };
+
+        function filterLeads(status) {
+            currentStatusFilter = status;
+            refreshLeadsList(true);
+        }
+
+        function setFilterChip(element, status) {
+            document.querySelectorAll('.filter-btn-modern').forEach(chip => chip.classList.remove('active'));
+            element.classList.add('active');
+            filterLeads(status);
+        }
+
+        // Hook live search bar
+        document.getElementById('searchInput')?.addEventListener('keyup', function () {
+            refreshLeadsList(true);
+        });
+
+        // Initialize dynamic list layout on DOM load
+        document.addEventListener('DOMContentLoaded', function () {
+            refreshLeadsList(true);
+        });
+
+        // Unlock Lead contact info premium action
+        // Unlock Lead contact info premium action
+        function unlockLead(leadId) {
+            Swal.fire({
+                title: 'Unlock Customer Contact?',
+                text: 'Revealing full email & phone details for this lead will charge ₹50 from your wallet.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#C9A84C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Unlock (₹50)',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing Unlock...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch(`/admin/api/lead/unlock/${leadId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log('Unlock response:', data);
+
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Successfully Unlocked!',
+                                    text: 'The contact information is now fully visible.',
+                                    icon: 'success',
+                                    confirmButtonColor: '#C9A84C'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Action Failed',
+                                    text: data.message || 'Could not complete unlock.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#C9A84C'
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Unlock error:', err);
+                            Swal.fire('Error', 'System communication error.', 'error');
+                        });
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

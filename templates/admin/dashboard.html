@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>NestFind — Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        /* Additional Premium Dashboard Styles */
+        .pagination-btn-premium {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--grey-light);
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--navy);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+        }
+        .pagination-btn-premium:hover:not(:disabled) {
+            background: rgba(201, 168, 76, 0.1);
+            border-color: var(--gold);
+            color: var(--navy);
+        }
+        .pagination-btn-premium.active {
+            background: var(--gold);
+            color: white;
+            border-color: var(--gold);
+            box-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+        }
+        .pagination-btn-premium:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--grey-pale);
+        }
+
+        .welcome-section {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .welcome-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 0.25rem;
+        }
+
+        .welcome-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        /* Premium Stat Cards */
+        .stats-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card-premium {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--grey-light);
+        }
+
+        .stat-card-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card-premium:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-icon-premium {
+            width: 45px;
+            height: 45px;
+            background: var(--cream);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .stat-card-premium:nth-child(1) .stat-icon-premium {
+            background: rgba(201, 168, 76, 0.12);
+            color: var(--gold);
+        }
+
+        .stat-card-premium:nth-child(2) .stat-icon-premium {
+            background: rgba(40, 167, 69, 0.12);
+            color: #28a745;
+        }
+
+        .stat-card-premium:nth-child(3) .stat-icon-premium {
+            background: rgba(23, 162, 184, 0.12);
+            color: #17a2b8;
+        }
+
+        .stat-card-premium:nth-child(4) .stat-icon-premium {
+            background: rgba(108, 117, 125, 0.12);
+            color: #6c757d;
+        }
+
+        .stat-value-premium {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-label-premium {
+            font-size: 0.7rem;
+            color: var(--grey);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-change-premium {
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-change-premium.up {
+            color: #28a745;
+        }
+
+        .stat-change-premium.down {
+            color: #dc3545;
+        }
+
+        /* Activity Feed */
+        .activity-timeline {
+            position: relative;
+        }
+
+        .activity-item-premium {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .activity-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        /* Premium Table */
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .premium-table th {
+            padding: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--grey-dark);
+            background: var(--cream);
+            border-bottom: 2px solid var(--grey-light);
+        }
+
+        .premium-table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--grey-light);
+        }
+
+        .premium-table tbody tr {
+            transition: all 0.2s;
+        }
+
+        .premium-table tbody tr:hover {
+            background: rgba(201, 168, 76, 0.04);
+        }
+
+        /* Listing Card View (Alternative to Table) */
+        .listing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .listing-card {
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--grey-light);
+        }
+
+        .listing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .listing-card-header {
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+            color: var(--white);
+        }
+
+        .listing-card-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .listing-card-location {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .listing-card-body {
+            padding: 1rem;
+        }
+
+        .listing-card-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .listing-card-details {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: var(--grey);
+        }
+
+        .listing-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--grey-light);
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--grey-pale);
+            padding: 0.25rem;
+            border-radius: 30px;
+        }
+
+        .view-btn {
+            padding: 0.25rem 1rem;
+            font-size: 0.7rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            color: var(--grey-dark);
+        }
+
+        .map-picker {
+            height: 300px;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 1px solid var(--grey-light);
+            z-index: 1;
+        }
+
+        .coordinates-info {
+            background: var(--cream);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-btn.active {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid-premium {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid-premium {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Current Location Button */
+        #getCurrentLocationBtn {
+            transition: all 0.2s ease;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        #getCurrentLocationBtn:hover {
+            background: var(--gold-light) !important;
+            transform: translateY(-2px);
+        }
+
+        #getCurrentLocationBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+</style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div>
+                    <div class="logo-text">Nest<span>Find</span></div>
+                </div>
+            </div>
+            <div class="logo-badge" style="margin-top:6px">Admin Console</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item active" style="text-decoration: none;">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('admin.admin_leads') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">👥</span> Leads
+                    {% if new_leads_count > 0 %}
+                    <span class="nav-badge">{{ new_leads_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('api.favorites_page') }}" class="nav-item">
+                    <span class="icon">❤️</span> Favorites
+                </a>
+                <a href="{{ url_for('admin.admin_wallet') }}" class="nav-item" style="text-decoration: none;">
+                    <span class="icon">💳</span> Wallet
+                    <span class="ms-auto" style="font-size:0.75rem; color:var(--gold); font-weight:600; margin-left:auto;">₹{{ "{:,.0f}".format(current_user.wallet_balance or 0) }}</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Data Management</div>
+                <div class="nav-item" onclick="scrollToUpload()"><span class="icon">📄</span> Upload Files</div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info">
+                    <div class="admin-name">{{ admin_name }}</div>
+                    <div class="admin-role">Broker</div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color:var(--grey-dark);font-size:14px" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">Dashboard</div>
+            <div class="topbar-actions">
+                <div class="search-box">🔍 &nbsp;Search...</div>
+                <div class="icon-btn" onclick="openModal()">➕</div>
+                <div class="icon-btn" style="position:relative" id="notificationBell">
+                    🔔
+                    <div class="notif-dot" id="notificationBadge" style="display: none;"></div>
+                </div>
+                <!-- Notifications Dropdown -->
+                <div class="notifications-dropdown" id="notificationsDropdown"
+                    style="display: none; position: absolute; top: 60px; right: 20px; width: 400px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); z-index: 1000; max-height: 500px; overflow-y: auto;">
+                    <div class="notifications-header"
+                        style="padding: 16px; border-bottom: 1px solid var(--grey-light); display: flex; justify-content: space-between; align-items: center;">
+                        <h6 style="margin: 0; font-weight: 700;">
+                            <i class="fa-regular fa-bell" style="margin-right: 8px;"></i>
+                            Notifications
+                        </h6>
+                        <button onclick="markAllNotificationsRead()"
+                            style="background: none; border: none; color: var(--gold); font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px;"
+                            onmouseover="this.style.background='rgba(201,168,76,0.1)'"
+                            onmouseout="this.style.background='transparent'">
+                            <i class="fa-regular fa-check-circle"></i> Mark all read
+                        </button>
+                    </div>
+                    <div id="notificationsList" class="notifications-list" style="max-height: 400px; overflow-y: auto;">
+                        <div style="padding: 40px; text-align: center; color: var(--grey);">
+                            <i class="fa-regular fa-bell-slash fa-2x mb-2"></i>
+                            <p style="font-size: 14px;">No notifications yet</p>
+                        </div>
+                    </div>
+                    <div class="notifications-footer"
+                        style="padding: 12px; border-top: 1px solid var(--grey-light); text-align: center;">
+                        <a href="#" onclick="viewAllNotifications(event)"
+                            style="color: var(--gold); font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                            View all notifications <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% if current_user.is_authenticated %}
+                <div class="dropdown">
+                    <div class="avatar" style="width:38px;height:38px;cursor:pointer;border:2px solid var(--grey-light)"
+                        data-bs-toggle="dropdown" aria-expanded="false" title="{{ current_user.name }}">
+                        {{ admin_initials }}
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end" style="margin-top:10px">
+                        <li class="px-3 py-2 border-bottom">
+                            <div class="fw-bold" style="font-size:14px">{{ current_user.name }}</div>
+                            <div class="text-muted" style="font-size:12px">{{ current_user.email }}</div>
+                        </li>
+                        <li><a class="dropdown-item mt-2" href="{{ url_for('auth.logout') }}">
+                                <i class="fa-solid fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-title">Welcome back, {{ admin_name }}! 👋</div>
+                <div class="welcome-subtitle">Here's what's happening with your real estate business today.</div>
+            </div>
+
+            <!-- Premium STAT CARDS -->
+            <div class="stats-grid-premium">
+                <div class="stat-card-premium">
+                    <div class="stat-header">
+                        <div class="stat-icon-premium"><i class="fa-solid fa-building"></i></div>
+                        <i class="fa-solid fa-ellipsis-h" style="color: var(--grey); opacity: 0.5;"></i>
+                    </div>
+                    <div class="stat-value-premium">{{ stats.total_listings }}</div>
+                    <div class="stat-label-premium">Total Listings</div>
+                    <div class="stat-change-premium up"><i class="fa-solid fa-arrow-up"></i> {{ stats.listings_change }}
+                    </div>
+                </div>
+
+                <div class="stat-card-premium">
+                    <div class="stat-header">
+                        <div class="stat-icon-premium"><i class="fa-solid fa-chart-line"></i></div>
+                        <i class="fa-solid fa-ellipsis-h" style="color: var(--grey); opacity: 0.5;"></i>
+                    </div>
+                    <div class="stat-value-premium">{{ stats.total_sales_value }}</div>
+                    <div class="stat-label-premium">Sales Value</div>
+                    <div class="stat-change-premium {% if '+' in stats.sales_change %}up{% else %}down{% endif %}">
+                        <i class="fa-solid fa-arrow-{% if '+' in stats.sales_change %}up{% else %}down{% endif %}"></i>
+                        {{ stats.sales_change }}
+                    </div>
+                </div>
+
+                <div class="stat-card-premium">
+                    <div class="stat-header">
+                        <div class="stat-icon-premium"><i class="fa-solid fa-users"></i></div>
+                        <i class="fa-solid fa-ellipsis-h" style="color: var(--grey); opacity: 0.5;"></i>
+                    </div>
+                    <div class="stat-value-premium">{{ stats.active_leads }}</div>
+                    <div class="stat-label-premium">Active Leads</div>
+                    <div class="stat-change-premium up"><i class="fa-solid fa-arrow-up"></i> {{ stats.leads_change }}
+                    </div>
+                </div>
+
+                <div class="stat-card-premium">
+                    <div class="stat-header">
+                        <div class="stat-icon-premium"><i class="fa-solid fa-file-alt"></i></div>
+                        <i class="fa-solid fa-ellipsis-h" style="color: var(--grey); opacity: 0.5;"></i>
+                    </div>
+                    <div class="stat-value-premium">{{ stats.files_uploaded }}</div>
+                    <div class="stat-label-premium">Files Uploaded</div>
+                    <div class="stat-change-premium">{{ stats.files_change }}</div>
+                </div>
+            </div>
+
+            <!-- ROW 2: ENHANCED CHART + ACTIVITY -->
+            <div class="grid-row cols-3-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Listing Activity</div>
+                            <div class="card-subtitle">Track your property listings performance</div>
+                        </div>
+                        <div style="display:flex;gap:16px;align-items:center">
+                            <!-- Time Period Filter Buttons -->
+                            <div class="chart-filter-group">
+                                <button class="chart-filter-btn active" data-period="week"
+                                    onclick="setChartPeriod('week')">
+                                    <i class="fa-solid fa-calendar-week"></i> Week
+                                </button>
+                                <button class="chart-filter-btn" data-period="month" onclick="setChartPeriod('month')">
+                                    <i class="fa-solid fa-calendar-alt"></i> Month
+                                </button>
+                                <button class="chart-filter-btn" data-period="year" onclick="setChartPeriod('year')">
+                                    <i class="fa-solid fa-calendar-year"></i> Year
+                                </button>
+                            </div>
+                            <!-- Legend -->
+                            <div style="display:flex;gap:16px;align-items:center">
+                                <span
+                                    style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--grey-dark)">
+                                    <span
+                                        style="width:10px;height:10px;border-radius:2px;background:var(--navy);display:inline-block"></span>
+                                    For Sale
+                                </span>
+                                <span
+                                    style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--grey-dark)">
+                                    <span
+                                        style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>
+                                    For Rent
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Chart Stats Summary -->
+                        <div class="chart-stats-summary"
+                            style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 12px; background: var(--cream); border-radius: 12px;">
+                            <div class="stat-item">
+                                <div class="stat-label" style="font-size: 11px;">Total Listings</div>
+                                <div class="stat-value" id="chartTotalListings" style="font-size: 20px;">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label" style="font-size: 11px;">This Period</div>
+                                <div class="stat-value" id="chartPeriodCount" style="font-size: 20px;">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label" style="font-size: 11px;">vs Previous</div>
+                                <div class="stat-value" id="chartVsPrevious"
+                                    style="font-size: 20px; color: var(--green);">+0%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label" style="font-size: 11px;">Avg. Price</div>
+                                <div class="stat-value" id="chartAvgPrice" style="font-size: 20px;">₹0</div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="chart-area">
+                            <div class="chart-bars" id="chartBars"></div>
+                        </div>
+
+                        <!-- Chart Details Footer -->
+                        <div
+                            style="display:flex;gap:24px;margin-top:12px;padding-top:12px;border-top:1px solid var(--grey-pale)">
+                            <div>
+                                <div style="font-size:12px;color:var(--grey-dark)">Avg. Price</div>
+                                <div style="font-weight:700;font-size:16px;font-family:'Playfair Display',serif"
+                                    id="avgPrice">{{ chart_data.avg_price }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:12px;color:var(--grey-dark)">Days on Market</div>
+                                <div style="font-weight:700;font-size:16px;font-family:'Playfair Display',serif"
+                                    id="daysOnMarket">{{ chart_data.days_on_market }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size:12px;color:var(--grey-dark)">Conversion Rate</div>
+                                <div style="font-weight:700;font-size:16px;font-family:'Playfair Display',serif"
+                                    id="conversionRate">{{ chart_data.conversion_rate }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Recent Activity</div>
+                            <div class="card-subtitle">Live updates from your portfolio</div>
+                        </div>
+                        <div class="card-action" onclick="refreshActivities()">
+                            <i class="fa-solid fa-rotate-right"></i> Refresh
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding-top:8px; max-height: 380px; overflow-y: auto;">
+                        <div class="activity-timeline" id="activityTimeline">
+                            {% for act in recent_activities %}
+                            <div class="activity-item-premium">
+                                <div class="activity-dot" style="background:rgba(61,184,122,0.12);color:var(--green)">
+                                    {{ act.icon }}
+                                </div>
+                                <div class="act-text">
+                                    <div class="act-msg" style="font-size: 0.8rem;">{{ act.msg|safe }}</div>
+                                    <div class="act-time" style="font-size: 0.7rem;">{{ act.time }}</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted" style="font-size: 14px;">No recent activity</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: UPLOAD ZONES + RECENT FILES -->
+            <div class="grid-row cols-2" id="upload-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Upload Data Files</div>
+                            <div class="card-subtitle">Add property PDFs or CSV datasets</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-section">
+                            <div class="upload-zone pdf-zone" id="pdfZone"
+                                ondragover="event.preventDefault();this.classList.add('dragover')"
+                                ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'pdf')">
+                                <div class="upload-icon">📄</div>
+                                <div class="upload-title">PDF Brochure</div>
+                                <div class="upload-hint">Drag & drop or click to browse</div>
+                                <button class="upload-btn" onclick="document.getElementById('pdfInput').click()">Select
+                                    PDF</button>
+                                <input type="file" id="pdfInput" accept=".pdf"
+                                    onchange="handleFileSelect(event,'pdf')" />
+                            </div>
+
+                            <div class="upload-zone csv-zone" id="csvZone"
+                                ondragover="event.preventDefault();this.classList.add('dragover')"
+                                ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'csv')">
+                                <div class="upload-icon">📊</div>
+                                <div class="upload-title">CSV / Excel</div>
+                                <div class="upload-hint">Drag & drop or click to browse</div>
+                                <button class="upload-btn" onclick="document.getElementById('csvInput').click()">Select
+                                    File</button>
+                                <input type="file" id="csvInput" accept=".csv,.xlsx,.xls"
+                                    onchange="handleFileSelect(event,'csv')" />
+                            </div>
+                        </div>
+
+                        <!-- Help Section -->
+                        <div
+                            style="margin-top: 15px; padding: 12px; background: var(--cream); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fa-solid fa-circle-info" style="color: var(--gold); font-size: 18px;"></i>
+                                <span style="font-size: 13px;">Need help with CSV format?</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="downloadSampleTemplate()"
+                                    style="padding: 6px 12px; background: var(--green); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    <i class="fa-solid fa-download"></i> Download Template
+                                </button>
+                                <button onclick="openFormatGuide()"
+                                    style="padding: 6px 12px; background: var(--gold); color: var(--navy); border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    <i class="fa-solid fa-book-open"></i> View Format Guide
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Recent Files</div>
+                            <div class="card-subtitle">Uploaded documents & datasets</div>
+                        </div>
+                        <div class="card-action">View All</div>
+                    </div>
+                    <div class="card-body" style="padding-top:8px; max-height: 320px; overflow-y: auto;">
+                        <div class="file-list" id="fileList">
+                            {% for file in recent_files %}
+                            <div class="file-item">
+                                <div class="file-thumb {{ file.type }}">{{ file.type|upper }}</div>
+                                <div class="file-info">
+                                    <div class="file-name">{{ file.name }}</div>
+                                    <div class="file-meta">{{ file.rows }} · {{ file.size }} · {{ file.date }}</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"
+                                            style="width:{{ file.progress }}%;background:var(--green)"></div>
+                                    </div>
+                                </div>
+                                <div class="file-status done">{{ file.status|title }}</div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted" style="font-size: 14px;">No files uploaded yet
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">
+                            <i class="fa-solid fa-building me-2" style="color: var(--gold);"></i>
+                            Property Portfolio
+                        </div>
+                        <div class="card-subtitle">
+                            {{ recent_listings|length }} active {% if recent_listings|length == 1 %}property{% else
+                            %}properties{% endif %} in your portfolio
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px; flex-wrap: wrap;">
+                        <button class="primary-btn"
+                            style="padding:6px 14px;font-size:11px;background:var(--red);color:white;display:none"
+                            onclick="deleteSelectedProperties()" id="deleteSelectedBtn">
+                            <i class="fa-regular fa-trash-can me-1"></i> Delete (<span id="selectedCount">0</span>)
+                        </button>
+                        <button class="primary-btn"
+                            style="padding:6px 14px;font-size:11px;background:var(--accent);color:var(--navy)"
+                            onclick="copyPortfolioLink({{ current_user.broker_id }})">
+                            <i class="fa-solid fa-link me-1"></i> Portfolio Link
+                        </button>
+                        <button class="primary-btn gold-btn" style="padding:6px 14px;font-size:11px"
+                            onclick="openModal()">
+                            <i class="fa-solid fa-plus me-1"></i> Add Listing
+                        </button>
+                        <button class="primary-btn"
+                            style="padding:6px 14px;font-size:11px;background:var(--grey-pale);color:var(--navy)"
+                            onclick="exportPropertiesCSV()">
+                            <i class="fa-solid fa-download me-1"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ========== SEARCH BAR SECTION (ADD THIS) ========== -->
+                <div class="portfolio-search-bar"
+                    style="padding: 15px 20px; background: var(--cream); border-bottom: 1px solid var(--grey-light);">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 2; min-width: 200px; position: relative;">
+                            <i class="fa-solid fa-magnifying-glass"
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--grey); font-size: 12px;"></i>
+                            <input type="text" id="portfolioSearchInput"
+                                placeholder="Search by property name, location, or price..."
+                                style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid var(--grey-light); border-radius: 10px; font-size: 13px;"
+                                onkeyup="filterPortfolioTable()">
+                        </div>
+                        <select id="portfolioTypeFilter" onchange="filterPortfolioTable()"
+                            style="padding: 8px 12px; border: 1px solid var(--grey-light); border-radius: 10px; font-size: 12px; background: white;">
+                            <option value="">All Types</option>
+                            <option value="For Sale">🏡 For Sale</option>
+                            <option value="For Rent">🔑 For Rent</option>
+                            <option value="New Project">🏗 New Project</option>
+                        </select>
+                        <select id="portfolioStatusFilter" onchange="filterPortfolioTable()"
+                            style="padding: 8px 12px; border: 1px solid var(--grey-light); border-radius: 10px; font-size: 12px; background: white;">
+                            <option value="">All Status</option>
+                            <option value="Active">🟢 Active</option>
+                            <option value="Sold">💰 Sold</option>
+                            <option value="Rented">🔑 Rented</option>
+                            <option value="Disconnected">⚫ Disconnected</option>
+                        </select>
+                        <select id="portfolioCategoryFilter" onchange="filterPortfolioTable()"
+                            style="padding: 8px 12px; border: 1px solid var(--grey-light); border-radius: 10px; font-size: 12px; background: white;">
+                            <option value="">All Categories</option>
+                            <option value="Apartment / Flat">🏢 Apartment/Flat</option>
+                            <option value="Villa / Bungalow">🏰 Villa/Bungalow</option>
+                            <option value="Plot / Land">📍 Plot/Land</option>
+                            <option value="Commercial">🏬 Commercial</option>
+                            <option value="Studio">🎨 Studio</option>
+                        </select>
+                        <button onclick="clearPortfolioFilters()"
+                            style="padding: 8px 16px; border: 1px solid var(--grey-light); border-radius: 10px; background: white; cursor: pointer; font-size: 12px;">
+                            <i class="fa-solid fa-times"></i> Clear Filters
+                        </button>
+                        <span id="filterResultCount" style="font-size: 12px; color: var(--grey); margin-left: auto;">
+                            Showing all properties
+                        </span>
+                    </div>
+                </div>
+                <!-- ========== END SEARCH BAR SECTION ========== -->
+
+                <div class="card-body" style="padding:0">
+                    <div style="overflow-x: auto;">
+                        <table style="width:100%; border-collapse: collapse; min-width: 1000px;">
+                            <thead>
+                                <tr style="background: var(--cream); border-bottom: 2px solid var(--grey-light);">
+                                    <th style="width:40px; padding: 1rem 0.8rem; text-align: center;">
+                                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll()"
+                                            style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-regular fa-building me-1"></i> Property
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-regular fa-tag me-1"></i> Type
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-solid fa-indian-rupee-sign me-1"></i> Price
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-solid fa-vector-square me-1"></i> Area
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-solid fa-bed me-1"></i> Beds
+                                    </th>
+                                    <th
+                                        style="text-align: left; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-regular fa-rectangle-ad me-1"></i> Category
+                                    </th>
+                                    <th
+                                        style="text-align: center; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-regular fa-eye me-1"></i> Status
+                                    </th>
+                                    <th
+                                        style="text-align: center; padding: 1rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--grey-dark); text-transform: uppercase; letter-spacing: 1px;">
+                                        <i class="fa-solid fa-sliders-h me-1"></i> Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for listing in recent_listings %}
+                                <tr style="border-bottom: 1px solid var(--grey-light); transition: all 0.2s;"
+                                    onmouseover="this.style.background='rgba(201,168,76,0.04)'"
+                                    onmouseout="this.style.background='transparent'">
+                                    <td style="padding: 1rem 0.8rem; text-align: center;">
+                                        <input type="checkbox" class="property-checkbox" value="{{ listing.id }}"
+                                            onclick="updateDeleteButton()"
+                                            style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent);">
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div
+                                                style="width: 42px; height: 42px; background: linear-gradient(135deg, var(--navy), var(--navy-mid)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold);">
+                                                <i class="fa-solid fa-home"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 700; color: var(--navy); font-size: 0.85rem;">
+                                                    {{ listing.name[:35] }}{% if listing.name|length > 35 %}...{% endif
+                                                    %}
+                                                </div>
+                                                <div
+                                                    style="font-size: 0.65rem; color: var(--grey-dark); margin-top: 2px;">
+                                                    <i class="fa-solid fa-location-dot"
+                                                        style="font-size: 8px; margin-right: 3px;"></i>
+                                                    {{ listing.location }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <span class="badge {{ listing.type_class }}"
+                                            style="padding: 4px 10px; font-size: 0.65rem; font-weight: 600; border-radius: 20px;">
+                                            {{ listing.type }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <div
+                                            style="font-weight: 800; color: var(--navy); font-size: 0.9rem; font-family: 'Playfair Display', serif;">
+                                            {{ listing.price }}
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem; font-size: 0.75rem; color: var(--grey-dark);">
+                                        {{ listing.area or 'N/A' }}
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <i class="fa-solid fa-bed"
+                                                style="color: var(--accent); font-size: 10px;"></i>
+                                            <span style="font-size: 0.8rem; font-weight: 500;">{{ listing.bedrooms or
+                                                'N/A' }}</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <span
+                                            style="background: var(--cream); padding: 3px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 600; color: var(--navy);">
+                                            {{ listing.category }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem; text-align: center;">
+                                        <label class="switch" style="width: 38px; height: 18px;">
+                                            <input type="checkbox" {% if listing.status in ['Active', 'Available' ]
+                                                %}checked{% endif %}
+                                                onchange="togglePropertyStatus({{ listing.id }}, this.checked)">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </td>
+                                    <td style="padding: 1rem 0.8rem;">
+                                        <div style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;">
+                                            <select class="status-select" data-property-id="{{ listing.id }}"
+                                                style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--grey-light); font-size: 11px; background: white; cursor: pointer;">
+                                                <option value="Active" {% if listing.status=='Active' %}selected{% endif
+                                                    %}>🟢 Active</option>
+                                                <option value="Sold" {% if listing.status=='Sold' %}selected{% endif %}>
+                                                    💰 Sold</option>
+                                                <option value="Rented" {% if listing.status=='Rented' %}selected{% endif
+                                                    %}>🔑 Rented</option>
+                                                <option value="Disconnected" {% if listing.status=='Disconnected'
+                                                    %}selected{% endif %}>⚫ Disconnected</option>
+                                            </select>
+
+                                            <button class="row-btn broadcast-btn" 
+                                                data-featured="{{ listing.is_featured }}"
+                                                title="{% if listing.is_featured %}Broadcast Active{% else %}Broadcast to Top (₹200){% endif %}"
+                                                onclick="broadcastProperty({{ listing.id }}, this)"
+                                                style="width: 28px; height: 28px; border-radius: 6px; border: none; background: {% if listing.is_featured %}#FFF8E1{% else %}var(--grey-pale){% endif %}; color: {% if listing.is_featured %}#FFB300{% else %}inherit{% endif %}; cursor: pointer; border: 1px solid {% if listing.is_featured %}#FFE082{% else %}transparent{% endif %};">
+                                                <i class="fa-solid fa-bullhorn" style="font-size: 11px;"></i>
+                                            </button>
+
+                                            <button class="row-btn" title="Edit Details"
+                                                onclick="editProperty({{ listing.id }})"
+                                                style="width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--grey-pale); cursor: pointer;">
+                                                <i class="fa-solid fa-pen" style="font-size: 11px;"></i>
+                                            </button>
+                                            <button class="row-btn" title="View Property"
+                                                onclick="previewProperty({{ listing.id }})"
+                                                style="width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--grey-pale); cursor: pointer;">
+                                                <i class="fa-solid fa-eye" style="font-size: 11px;"></i>
+                                            </button>
+                                            <button class="row-btn" title="Delete"
+                                                onclick="deleteProperty({{ listing.id }})"
+                                                style="width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--grey-pale); cursor: pointer;">
+                                                <i class="fa-solid fa-trash" style="font-size: 11px;"></i>
+                                            </button>
+                                            <button class="row-btn" title="Share Link"
+                                                onclick="copyPropertyLink({{ listing.id }}, '{{ listing.name }}')"
+                                                style="width: 28px; height: 28px; border-radius: 6px; border: none; background: var(--grey-pale); cursor: pointer;">
+                                                <i class="fa-solid fa-share-alt" style="font-size: 11px;"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination Controls -->
+                    <div id="portfolioPagination" style="display: none; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid var(--grey-light);">
+                        <div class="pagination-info" style="font-size: 0.85rem; color: var(--grey-dark);"></div>
+                        <div class="pagination-controls" style="display: flex; gap: 6px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+    <!-- ────── ADD PROPERTY MODAL - PREMIUM VERSION ────── -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card" style="max-width: 700px; width: 90%;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-plus-circle me-2" style="color: var(--gold);"></i>
+                    Add New Property
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Property Type Tabs -->
+                <div class="type-tabs">
+                    <div class="type-tab active" onclick="setTab(this)">
+                        <i class="fa-solid fa-tag me-1"></i> For Sale
+                    </div>
+                    <div class="type-tab" onclick="setTab(this)">
+                        <i class="fa-solid fa-key me-1"></i> For Rent
+                    </div>
+                    <div class="type-tab" onclick="setTab(this)">
+                        <i class="fa-solid fa-hard-hat me-1"></i> New Project
+                    </div>
+                </div>
+
+                <!-- Two Column Layout -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <!-- Left Column -->
+                    <div>
+                        <!-- Property Title -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-regular fa-building me-1" style="color: var(--gold);"></i>
+                                Property Title <span style="color: var(--red);">*</span>
+                            </label>
+                            <input class="form-input" placeholder="e.g., 3BHK Luxury Apartment" />
+                            <small class="text-muted">Enter a descriptive title for your property</small>
+                        </div>
+
+                        <!-- Location with Current Location Button -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-location-dot me-1" style="color: var(--gold);"></i>
+                                City / Location <span style="color: var(--red);">*</span>
+                            </label>
+                            <div style="display: flex; gap: 10px;">
+                                <input class="form-input" id="locationInput"
+                                    placeholder="Chandigarh / Mohali / Panchkula" style="flex: 1;" />
+                                <button type="button" id="getCurrentLocationBtn"
+                                    style="background: var(--accent); color: var(--navy); border: none; border-radius: 8px; padding: 0 16px; cursor: pointer; font-weight: 500; transition: all 0.2s; white-space: nowrap;"
+                                    onclick="getCurrentLocationForProperty()">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Current
+                                </button>
+                            </div>
+                            <small class="text-muted">Type address, click on map, or use current location</small>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-indian-rupee-sign me-1" style="color: var(--gold);"></i>
+                                Price <span style="color: var(--red);">*</span>
+                            </label>
+                            <input class="form-input" placeholder="e.g., 75,00,000 or 25,000/mo" />
+                            <small class="text-muted">For rent, add /mo at the end (e.g., 25,000/mo)</small>
+                        </div>
+
+                        <!-- Area -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-vector-square me-1" style="color: var(--gold);"></i>
+                                Area (sq ft)
+                            </label>
+                            <input class="form-input" placeholder="e.g., 1450" />
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <!-- Property Category -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-regular fa-building me-1" style="color: var(--gold);"></i>
+                                Property Type
+                            </label>
+                            <select class="form-select">
+                                <option>Apartment / Flat</option>
+                                <option>Villa / Bungalow</option>
+                                <option>Plot / Land</option>
+                                <option>Commercial Space</option>
+                                <option>Studio Apartment</option>
+                                <option>Penthouse</option>
+                            </select>
+                        </div>
+
+                        <!-- Bedrooms -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa-solid fa-bed me-1" style="color: var(--gold);"></i>
+                                Bedrooms
+                            </label>
+                            <select class="form-select">
+                                <option>Studio</option>
+                                <option>1 BHK</option>
+                                <option>2 BHK</option>
+                                <option selected>3 BHK</option>
+                                <option>4 BHK</option>
+                                <option>4+ BHK</option>
+                            </select>
+                        </div>
+
+                        <!-- Agent (Hidden for now, can be added later) -->
+                        <div class="form-group" style="display: none;">
+                            <label class="form-label">Assign Agent</label>
+                            <select class="form-select">
+                                <option>Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Picker Section - Full Width -->
+                <div class="form-group" style="margin-top: 8px;">
+                    <label class="form-label">
+                        <i class="fa-solid fa-map-pin me-1" style="color: var(--gold);"></i>
+                        Map Location Picker
+                    </label>
+                    <div id="locationPickerMap" class="map-picker"
+                        style="height: 220px; border-radius: 12px; border: 1px solid var(--grey-light);"></div>
+                    <div class="coordinates-info"
+                        style="display: flex; justify-content: space-between; align-items: center; background: var(--cream); padding: 8px 12px; border-radius: 8px; margin-top: 8px;">
+                        <span>
+                            <i class="fa-solid fa-location-dot" style="color: var(--gold);"></i>
+                            <span id="selectedLat">--</span>, <span id="selectedLng">--</span>
+                        </span>
+                        <button type="button"
+                            style="background: var(--accent); color: var(--navy); border: none; border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer;"
+                            onclick="clearMapSelection()">
+                            <i class="fa-solid fa-xmark"></i> Clear
+                        </button>
+                    </div>
+                    <input type="hidden" id="pickerLat" value="">
+                    <input type="hidden" id="pickerLng" value="">
+                    <small class="text-muted">Click anywhere on the map to pin the exact property location</small>
+                </div>
+
+                <!-- PDF Brochure Section -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-file-pdf me-1" style="color: var(--red);"></i>
+                        Attach Brochure (PDF)
+                    </label>
+                    <div class="upload-zone pdf-zone"
+                        style="padding: 12px 16px; text-align: left; display: flex; align-items: center; gap: 12px; cursor: pointer;"
+                        onclick="document.getElementById('modalPdf').click()">
+                        <span style="font-size: 24px;">📄</span>
+                        <div style="flex: 1;">
+                            <div class="upload-title" style="font-size: 13px; margin-bottom: 2px;">Click to attach PDF
+                                brochure</div>
+                            <div class="upload-hint" style="font-size: 11px;">Upload property brochure or floor plan
+                                (Max 50 MB)</div>
+                        </div>
+                        <i class="fa-solid fa-upload" style="color: var(--grey-dark);"></i>
+                        <input type="file" id="modalPdf" accept=".pdf" style="display: none;"
+                            onchange="handleModalFile(event)" />
+                    </div>
+                </div>
+
+                <!-- Property Images Section -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-regular fa-image me-1" style="color: var(--gold);"></i>
+                        Property Images
+                        <span style="color: var(--grey-dark); font-size: 11px; font-weight: 400;">(multiple
+                            allowed)</span>
+                    </label>
+                    <div class="upload-zone image-zone" id="imageDropZone"
+                        style="padding: 20px 16px; text-align: center; cursor: pointer; border: 2px dashed var(--grey-light); border-radius: 12px; background: var(--cream); transition: all 0.2s;"
+                        onclick="document.getElementById('modalImage').click()"
+                        ondragover="event.preventDefault(); this.classList.add('dragover');"
+                        ondragleave="this.classList.remove('dragover');" ondrop="handleImageDrop(event)">
+                        <i class="fa-solid fa-cloud-arrow-up"
+                            style="font-size: 32px; color: var(--gold); margin-bottom: 8px; display: block;"></i>
+                        <div class="upload-title" style="font-size: 13px; font-weight: 500;">Click or drag &amp; drop
+                            images here</div>
+                        <div class="upload-hint" style="font-size: 11px;">JPG, PNG, GIF, WebP · Max 10 MB each · Select
+                            multiple</div>
+                        <input type="file" id="modalImage" accept="image/*" multiple style="display: none;"
+                            onchange="handleImageFile(event)" />
+                    </div>
+                    <div id="imagePreviewGrid" style="margin-top: 12px; display: none; flex-wrap: wrap; gap: 10px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="primary-btn" style="background: var(--grey-light); color: var(--navy); box-shadow: none;"
+                    onclick="closeModal()">
+                    <i class="fa-solid fa-xmark me-1"></i> Cancel
+                </button>
+                <button class="primary-btn" onclick="saveProperty()"
+                    style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy);">
+                    <i class="fa-solid fa-check me-1"></i> Save Property
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-card" style="max-width:800px">
+            <div class="modal-header">
+                <div class="modal-title">Property Details</div>
+                <button class="modal-close" onclick="closePreviewModal()">✕</button>
+            </div>
+            <div class="modal-body" id="previewContent"></div>
+            <div class="modal-footer">
+                <button class="primary-btn" style="background:var(--grey-light);color:var(--navy);box-shadow:none"
+                    onclick="closePreviewModal()">Close</button>
+                <button class="primary-btn" onclick="editFromPreview()">✏️ Edit Property</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Edit Property</div>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="type-tabs">
+                    <div class="type-tab active" onclick="setEditTab(this)">🏡 For Sale</div>
+                    <div class="type-tab" onclick="setEditTab(this)">🔑 For Rent</div>
+                    <div class="type-tab" onclick="setEditTab(this)">🏗 New Project</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label class="form-label">Property Title</label>
+                        <input class="form-input" id="editTitle" placeholder="e.g. 3BHK Apartment Sector 22" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">City / Location</label>
+                        <input class="form-input" id="editLocation" placeholder="Chandigarh / Mohali / Panchkula" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Property Type</label>
+                        <select class="form-select" id="editPropertyType">
+                            <option>Apartment / Flat</option>
+                            <option>Villa / Bungalow</option>
+                            <option>Plot / Land</option>
+                            <option>Commercial</option>
+                            <option>Studio</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price (₹)</label>
+                        <input class="form-input" id="editPrice" placeholder="e.g. 75,00,000" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Area (sq ft)</label>
+                        <input class="form-input" id="editArea" placeholder="e.g. 1450" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bedrooms</label>
+                        <select class="form-select" id="editBedrooms">
+                            <option>Studio</option>
+                            <option>1 BHK</option>
+                            <option>2 BHK</option>
+                            <option>3 BHK</option>
+                            <option>4 BHK</option>
+                            <option>4+ BHK</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Property Images</label>
+                    <div id="existingImagesGrid" style="display: none; margin-bottom: 12px;">
+                        <div class="existing-images-container"
+                            style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+                    </div>
+                    <div class="upload-zone image-zone"
+                        style="padding:16px 12px;text-align:left;display:flex;align-items:center;gap:12px"
+                        onclick="document.getElementById('editImage').click()">
+                        <span style="font-size:22px">🖼️</span>
+                        <div>
+                            <div class="upload-title" style="font-size:13px">Click to add more images</div>
+                            <div class="upload-hint">JPG, PNG, GIF • Max 10 MB each</div>
+                        </div>
+                        <input type="file" id="editImage" accept="image/*" multiple
+                            onchange="handleEditImageFile(event)" />
+                    </div>
+                    <div id="editImagePreview" style="margin-top:10px;display:none;">
+                        <div class="new-images-container" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn" style="background:var(--grey-light);color:var(--navy);box-shadow:none"
+                    onclick="closeEditModal()">Cancel</button>
+                <button class="primary-btn" id="updateBtn" onclick="updateProperty()">💾 Update Property</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.dashboardChartData = {{ chart_data | tojson }};
+
+        // Export function - FIXED
+        function exportPropertiesCSV() {
+            // Find the table body - your table doesn't have premium-table class
+            const tbody = document.querySelector('.card .card-body table tbody');
+            if (!tbody) {
+                showToast('No properties found to export!', 'error');
+                return;
+            }
+
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length === 0) {
+                showToast('No properties to export!', 'error');
+                return;
+            }
+
+            // CSV Header
+            let csv = 'Property Name,Location,Type,Price,Area,Bedrooms,Category,Status\n';
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 9) {
+                    // Get property name and location from cell index 1
+                    const cell1Content = cells[1]?.innerText || '';
+                    const lines = cell1Content.split('\n').filter(l => l.trim());
+                    const propertyName = lines[0]?.trim() || '';
+                    const location = lines[1]?.trim() || '';
+
+                    const type = cells[2]?.innerText.trim() || '';
+                    const price = cells[3]?.innerText.trim() || '';
+                    const area = cells[4]?.innerText.trim() || '';
+                    const bedrooms = cells[5]?.innerText.trim() || '';
+                    const category = cells[6]?.innerText.trim() || '';
+
+                    // Get status from toggle switch in cell index 7
+                    const statusSwitch = cells[7]?.querySelector('input');
+                    const status = statusSwitch && statusSwitch.checked ? 'Active' : 'Inactive';
+
+                    csv += `"${propertyName}",`;
+                    csv += `"${location}",`;
+                    csv += `${type},`;
+                    csv += `${price},`;
+                    csv += `${area},`;
+                    csv += `${bedrooms},`;
+                    csv += `${category},`;
+                    csv += `${status}\n`;
+                }
+            });
+
+            // Create and download file
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nestfind_properties_${Date.now()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`✅ Exported ${rows.length} properties successfully!`, 'success');
+        }
+
+        // Scroll to upload section
+        function scrollToUpload() {
+            document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' });
+        }
+        // Broadcast Property Premium action
+        function broadcastProperty(propertyId, btn) {
+            const isFeatured = btn.getAttribute('data-featured') === 'True';
+            
+            if (isFeatured) {
+                Swal.fire({
+                    title: 'Broadcast Active',
+                    text: 'This property is already featured and boosted to the top of listings!',
+                    icon: 'info',
+                    confirmButtonColor: '#C9A84C'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Broadcast to Top?',
+                text: 'Featuring this listing will boost it to the top of our portal with a Premium Ribbon. This charges ₹200 from your wallet.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#C9A84C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Broadcast (₹200)',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing Broadcast...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch(`/admin/api/property/broadcast/${propertyId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Successfully Broadcasted!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#C9A84C'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Operation Failed',
+                                text: data.message || 'Could not complete broadcast.',
+                                icon: 'error',
+                                confirmButtonColor: '#C9A84C'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Communication issue with the server.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+    <!-- Format Guide Modal -->
+    <div id="formatGuideModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="max-width: 800px; width: 90%;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-file-csv" style="color: var(--gold);"></i>
+                    CSV/Excel Format Guide
+                </div>
+                <button class="modal-close" onclick="closeFormatGuide()">✕</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div
+                    style="margin-bottom: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; border-left: 4px solid #4caf50;">
+                    <i class="fa-solid fa-check-circle" style="color: #4caf50;"></i>
+                    <strong>Quick Tips:</strong>
+                    <ul style="margin: 10px 0 0 20px;">
+                        <li>Only <strong>Property Name</strong> and <strong>Price</strong> are required</li>
+                        <li>All other columns are optional</li>
+                        <li>You can use any column order</li>
+                        <li>Column names are case-insensitive (Property, PROPERTY, property all work)</li>
+                    </ul>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: var(--navy);">📋 Required Columns</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: var(--cream);">
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Column
+                                Name</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Required
+                            </th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Example
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>property</code> or
+                                <code>property_name</code>
+                            </td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">✅ Yes</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"Sunrise Villa"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>price</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">✅ Yes</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"50 Lakhs", "1.2 Cr",
+                                "25000/mo"</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 style="margin: 20px 0 10px; color: var(--navy);">📝 Optional Columns</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background: var(--cream);">
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Column
+                                Name</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Purpose
+                            </th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid var(--grey-light);">Example
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>location</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Property address/area</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"Sector 17, Chandigarh"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>type</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Listing type</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"For Sale" or "For Rent"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>category</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Property category</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"Apartment / Flat", "Villa /
+                                Bungalow"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>bedrooms</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Number of bedrooms</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"3 BHK", "Studio"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>area</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Size in sq ft</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"1450 sq ft"</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);"><code>status</code></td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">Property status</td>
+                            <td style="padding: 8px; border: 1px solid var(--grey-light);">"Active", "Sold", "Rented"
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 style="margin: 20px 0 10px; color: var(--navy);">💰 Price Format Examples</h4>
+                <div style="background: var(--cream); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <ul style="margin: 0 0 0 20px;">
+                        <li><code>50 Lakhs</code> → ₹50,00,000</li>
+                        <li><code>1.2 Cr</code> → ₹1,20,00,000</li>
+                        <li><code>25000/mo</code> → ₹25,000 per month (rent)</li>
+                        <li><code>35000</code> → ₹35,000</li>
+                        <li><code>75,00,000</code> → ₹75,00,000</li>
+                    </ul>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: var(--navy);">📊 Sample Data Preview</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="background: var(--navy); color: white;">
+                                <th style="padding: 8px; border: 1px solid #ddd;">property</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">price</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">location</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">type</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">category</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">bedrooms</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 6px; border: 1px solid #ddd;">Sunrise Villa</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">50 Lakhs</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">Sector 17</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">For Sale</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">Villa</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">4 BHK</td>
+                            </tr>
+                            <tr style="background: var(--grey-pale);">
+                                <td style="padding: 6px; border: 1px solid #ddd;">Azure Apt</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">35000/mo</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">Mohali</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">For Rent</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">Apartment</td>
+                                <td style="padding: 6px; border: 1px solid #ddd;">2 BHK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 10px; border-left: 4px solid var(--gold);">
+                    <i class="fa-solid fa-lightbulb" style="color: var(--gold);"></i>
+                    <strong>Pro Tip:</strong> Download our sample template, fill in your data, and upload it. The system
+                    will automatically map your columns!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn" onclick="downloadSampleTemplate()" style="background: var(--green);">
+                    <i class="fa-solid fa-download"></i> Download Sample CSV
+                </button>
+                <button class="primary-btn" onclick="closeFormatGuide()" style="background: var(--grey);">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

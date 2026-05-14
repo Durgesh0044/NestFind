@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>NestFind — Super Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0B1F3A;
+            --navy-mid: #1A3558;
+            --navy-light: #2C4A6E;
+            --gold: #C9A84C;
+            --gold-light: #E8C876;
+            --gold-dark: #A8882E;
+            --cream: #F8F6F0;
+            --cream-dark: #EBE5D5;
+            --grey: #6B7A99;
+            --grey-light: #E2E8F0;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.16);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #F8F6F0 0%, #F0EDE5 100%);
+            color: var(--navy);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: var(--white);
+            backdrop-filter: blur(0px);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            padding: 1.8rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(201, 168, 76, 0.15);
+            transition: var(--transition);
+        }
+
+        .sidebar-logo {
+            margin-bottom: 2rem;
+            padding-left: 0.5rem;
+        }
+
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            color: var(--gold);
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--navy);
+        }
+
+        .logo-text span {
+            color: var(--gold);
+        }
+
+        .super-badge {
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--navy);
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            margin-top: 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            color: var(--grey);
+            margin-bottom: 0.8rem;
+            padding-left: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 14px;
+            color: var(--navy);
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 5px;
+            text-decoration: none;
+            background: transparent;
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            width: 28px;
+        }
+
+        .nav-item:hover {
+            background: var(--cream);
+            color: var(--gold);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(95deg, rgba(201, 168, 76, 0.12) 0%, rgba(201, 168, 76, 0.05) 100%);
+            color: var(--gold);
+            font-weight: 600;
+            border-left: 3px solid var(--gold);
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--grey-light);
+            padding-top: 1.2rem;
+            margin-top: auto;
+        }
+
+        .admin-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(145deg, var(--gold), var(--gold-light));
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--navy);
+            font-size: 1rem;
+        }
+
+        .admin-info {
+            flex: 1;
+        }
+
+        .admin-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .admin-role {
+            font-size: 0.7rem;
+            color: var(--grey);
+        }
+
+        /* Topbar */
+        .topbar {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(201, 168, 76, 0.1);
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            background: var(--cream);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--gold-light);
+            transform: scale(1.05);
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid var(--white);
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 280px;
+            padding: 1.5rem 2rem 2rem 2rem;
+            min-height: 100vh;
+        }
+
+        .content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Welcome Section */
+        .welcome-premium {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            border-radius: 28px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-premium::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -5%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .welcome-premium::after {
+            content: '👑';
+            position: absolute;
+            bottom: 10px;
+            right: 30px;
+            font-size: 80px;
+            opacity: 0.08;
+        }
+
+        .welcome-title-premium {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-subtitle-premium {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
+            margin-top: 0.3rem;
+        }
+
+        /* Stats Grid */
+        .stat-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card-premium {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 1.2rem;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(201, 168, 76, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card-premium:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card-premium:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-icon-premium {
+            width: 48px;
+            height: 48px;
+            background: rgba(201, 168, 76, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        .stat-number-premium {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .stat-label-premium {
+            font-size: 0.7rem;
+            color: var(--grey);
+            margin-top: 0.3rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-trend {
+            font-size: 0.65rem;
+            margin-top: 0.5rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .trend-up {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+        }
+
+        /* Trend Chart */
+        .trend-container {
+            background: var(--white);
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(201, 168, 76, 0.1);
+            transition: var(--transition);
+        }
+
+        .trend-container:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .trend-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            justify-content: space-around;
+            margin-top: 1.5rem;
+        }
+
+        .trend-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .trend-bar {
+            background: var(--cream);
+            border-radius: 12px;
+            height: 100px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .trend-bar:hover {
+            transform: scale(1.05);
+        }
+
+        .trend-fill {
+            background: linear-gradient(180deg, var(--gold), var(--gold-light));
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: height 0.5s ease;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .trend-label {
+            font-size: 0.7rem;
+            color: var(--grey);
+            margin-top: 0.6rem;
+            font-weight: 600;
+        }
+
+        .trend-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 0.2rem;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 28px;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header-premium {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        }
+
+        .card-title-premium {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .card-subtitle-premium {
+            font-size: 0.7rem;
+            color: var(--grey);
+            margin-top: 0.2rem;
+        }
+
+        /* Tables */
+        .table-premium {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .table-premium th {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--grey);
+            padding: 1rem;
+            background: var(--cream);
+            border-bottom: 2px solid rgba(201, 168, 76, 0.2);
+        }
+
+        .table-premium td {
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: var(--navy);
+            border-bottom: 1px solid rgba(201, 168, 76, 0.08);
+            vertical-align: middle;
+        }
+
+        .table-premium tr {
+            transition: var(--transition);
+        }
+
+        .table-premium tr:hover {
+            background: rgba(201, 168, 76, 0.03);
+        }
+
+        /* Badges */
+        .badge-active {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-blocked {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--warning);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Grid Layout */
+        .grid-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1400px) {
+            .stat-grid-premium {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .stat-grid-premium {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1050;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .mobile-toggle {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1100;
+                background: var(--gold);
+                border: none;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                color: var(--navy);
+                box-shadow: var(--shadow-lg);
+                cursor: pointer;
+                font-size: 1.2rem;
+            }
+            .stat-grid-premium {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+        }
+
+        .mobile-toggle {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">
+                <span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div>
+                    <div class="logo-text">Nest<span>Find</span></div>
+                </div>
+            </div>
+            <div class="logo-badge" style="margin-top:8px">
+                <span class="super-badge">SUPER ADMIN</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('superadmin.super_admin_dashboard') }}" class="nav-item active">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="{{ url_for('superadmin.super_admin_brokers') }}" class="nav-item">
+                    <span class="icon">👥</span> Brokers
+                </a>
+                <a href="{{ url_for('superadmin.super_admin_properties') }}" class="nav-item">
+                    <span class="icon">🏠</span> All Properties
+                </a>
+                <a href="{{ url_for('superadmin.super_admin_leads') }}" class="nav-item">
+                    <span class="icon">📋</span> All Leads
+                </a>
+                <a href="{{ url_for('superadmin.super_admin_activities') }}" class="nav-item">
+                    <span class="icon">📜</span> Activity Logs
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info">
+                    <div class="admin-name">{{ admin_name }}</div>
+                    <div class="admin-role">Super Administrator</div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color: var(--grey); font-size: 1rem; transition: var(--transition);" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="page-title">
+                <i class="fa-solid fa-gauge-high" style="color: var(--gold); margin-right: 8px;"></i>
+                Executive Dashboard
+            </div>
+            <div class="topbar-actions">
+                <div class="icon-btn" style="position: relative;">
+                    <i class="fa-regular fa-bell"></i>
+                    <div class="notif-dot"></div>
+                </div>
+                <div class="icon-btn">
+                    <i class="fa-regular fa-moon"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Welcome Section -->
+            <div class="welcome-premium">
+                <div class="welcome-title-premium">Welcome back, {{ admin_name }}! 👑</div>
+                <div class="welcome-subtitle-premium">You have full control over the NestFind platform. Monitor activity, manage brokers, and track platform growth.</div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stat-grid-premium">
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-store"></i></div>
+                    <div class="stat-number-premium">{{ total_brokers }}</div>
+                    <div class="stat-label-premium">Total Brokers</div>
+                    <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> {{ active_brokers }} Active</div>
+                </div>
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-building"></i></div>
+                    <div class="stat-number-premium">{{ total_properties }}</div>
+                    <div class="stat-label-premium">Total Properties</div>
+                    <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> {{ active_properties }} Active</div>
+                </div>
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-number-premium">{{ total_leads }}</div>
+                    <div class="stat-label-premium">Total Leads</div>
+                    <div class="stat-trend trend-up"><i class="fa-solid fa-arrow-up"></i> {{ new_leads }} New</div>
+                </div>
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-user-plus"></i></div>
+                    <div class="stat-number-premium">{{ total_users }}</div>
+                    <div class="stat-label-premium">User Inquiries</div>
+                    <div class="stat-trend">+{{ recent_properties|length }} This Week</div>
+                </div>
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="stat-number-premium">{{ recent_properties|length }}</div>
+                    <div class="stat-label-premium">New Listings</div>
+                    <div class="stat-trend trend-up">Last 7 Days</div>
+                </div>
+                <div class="stat-card-premium">
+                    <div class="stat-icon-premium"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="stat-number-premium">{% if total_properties > 0 %}{{ ((active_properties / total_properties) * 100)|int }}{% else %}0{% endif %}%</div>
+                    <div class="stat-label-premium">Active Rate</div>
+                    <div class="stat-trend trend-up">Platform Health</div>
+                </div>
+            </div>
+
+            <!-- Property Trend Chart -->
+            <div class="trend-container">
+                <div class="card-header-premium" style="padding: 0 0 1rem 0;">
+                    <div>
+                        <div class="card-title-premium">
+                            <i class="fa-solid fa-chart-simple" style="color: var(--gold); margin-right: 8px;"></i>
+                            Listing Activity
+                        </div>
+                        <div class="card-subtitle-premium">Property additions over the last 7 days</div>
+                    </div>
+                </div>
+                <div class="trend-bars">
+                    {% for trend in property_trend %}
+                    <div class="trend-item">
+                        <div class="trend-bar">
+                            <div class="trend-fill" style="height: {% if trend.count > 0 %}{{ (trend.count / 10) * 100 }}{% else %}0{% endif %}%;"></div>
+                        </div>
+                        <div class="trend-label">{{ trend.date }}</div>
+                        <div class="trend-value">{{ trend.count }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Brokers & Properties -->
+            <div class="grid-row">
+                <!-- Recent Brokers -->
+                <div class="card">
+                    <div class="card-header-premium">
+                        <div>
+                            <div class="card-title-premium">
+                                <i class="fa-solid fa-user-tie" style="color: var(--gold); margin-right: 8px;"></i>
+                                Recent Brokers
+                            </div>
+                            <div class="card-subtitle-premium">Latest registered brokers on the platform</div>
+                        </div>
+                        <a href="{{ url_for('superadmin.super_admin_brokers') }}" style="color: var(--gold); font-size: 0.75rem; text-decoration: none;">
+                            View All <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div style="overflow-x: auto;">
+                            <table class="table-premium">
+                                <thead>
+                                    <tr>
+                                        <th>Broker</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for broker in recent_brokers %}
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--navy); font-weight: 700;">
+                                                    {{ broker.name[0]|upper }}
+                                                </div>
+                                                <div style="font-weight: 600;">{{ broker.name }}</div>
+                                            </div>
+                                        </td>
+                                        <td style="font-size: 0.8rem;">{{ broker.email[:25] }}{% if broker.email|length > 25 %}...{% endif %}</td>
+                                        <td>
+                                            <span class="badge-active" {% if not broker.is_active %}class="badge-blocked"{% endif %}>
+                                                {{ 'Active' if broker.is_active else 'Blocked' }}
+                                            </span>
+                                        </td>
+                                        <td style="color: var(--grey); font-size: 0.7rem;">{{ broker.created_at.strftime('%b %d, %Y') if broker.created_at else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Properties -->
+                <div class="card">
+                    <div class="card-header-premium">
+                        <div>
+                            <div class="card-title-premium">
+                                <i class="fa-solid fa-building" style="color: var(--gold); margin-right: 8px;"></i>
+                                Recent Properties
+                            </div>
+                            <div class="card-subtitle-premium">Latest listings added by brokers</div>
+                        </div>
+                        <a href="{{ url_for('superadmin.super_admin_properties') }}" style="color: var(--gold); font-size: 0.75rem; text-decoration: none;">
+                            View All <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div style="overflow-x: auto;">
+                            <table class="table-premium">
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Broker</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prop in recent_properties %}
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight: 600;">{{ prop.property[:30] }}{% if prop.property|length > 30 %}...{% endif %}</div>
+                                            <div style="font-size: 0.7rem; color: var(--grey);">{{ prop.location[:20] if prop.location else 'No location' }}</div>
+                                        </td>
+                                        <td style="font-size: 0.8rem;">{{ prop.broker_info.name if prop.broker_info else 'N/A' }}</td>
+                                        <td style="font-weight: 700; color: var(--gold);">{{ prop.price }}</td>
+                                        <td>
+                                            <span class="badge-active" {% if prop.status != 'Active' %}class="badge-pending"{% endif %}>
+                                                {{ prop.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // Animate trend bars on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const fills = document.querySelectorAll('.trend-fill');
+            fills.forEach(fill => {
+                const height = fill.style.height;
+                fill.style.height = '0%';
+                setTimeout(() => {
+                    fill.style.height = height;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

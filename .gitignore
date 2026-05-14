@@ -1,0 +1,39 @@
+venv
+.env
+.env.*
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+*.log
+*.sqlite3
+*.db
+*.bak
+*.swp
+*.tmp
+*.zip
+*.tar.gz
+*.egg-info/
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Ignore VSCode settings
+.vscode/
+# Ignore PyCharm settings
+*.iml
+# Ignore coverage reports
+htmlcov/
+.coverage
+.coverage.*
+# Ignore pytest cache
+.pytest_cache/
+# Ignore mypy cache
+.mypy_cache/
+# Ignore Sphinx build files
+_build/
+# Ignore Jupyter Notebook outputs
+*.ipynb
+# Ignore data files
+data/
+# Ignore logs
+logs/
+

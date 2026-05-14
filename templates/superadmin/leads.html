@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>All Leads — Super Admin | NestFind</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        /* Same base styles as Activity Logs page */
+        :root {
+            --navy: #0B1F3A;
+            --gold: #C9A84C;
+            --gold-light: #E8C876;
+            --cream: #F8F6F0;
+            --grey: #5A6E7A;
+            --grey-light: #E2E4E8;
+            --shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #F1EFEA; color: var(--navy); }
+        .sidebar { width: 280px; position: fixed; left: 0; top: 0; bottom: 0; background: white; box-shadow: 2px 0 20px rgba(0,0,0,0.03); padding: 2rem 1.2rem; display: flex; flex-direction: column; border-right: 1px solid rgba(201,168,76,0.2); transition: var(--transition); }
+        .sidebar-logo { margin-bottom: 2rem; }
+        .logo-mark { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { font-size: 2rem; color: var(--gold); }
+        .logo-text { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--navy); }
+        .logo-text span { color: var(--gold); }
+        .super-badge { background: linear-gradient(135deg, #C9A84C, #E8C876); color: #0B1F3A; padding: 4px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 800; display: inline-block; }
+        .sidebar-nav { flex: 1; margin-top: 1rem; }
+        .nav-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--grey); margin-bottom: 0.8rem; padding-left: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: 14px; color: var(--navy); font-weight: 500; transition: var(--transition); margin-bottom: 5px; text-decoration: none; }
+        .nav-item:hover { background: var(--cream); color: var(--gold); transform: translateX(5px); }
+        .nav-item.active { background: linear-gradient(95deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.05) 100%); color: var(--gold); font-weight: 600; border-left: 3px solid var(--gold); }
+        .sidebar-footer { border-top: 1px solid var(--grey-light); padding-top: 1.2rem; margin-top: auto; }
+        .admin-card { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 42px; height: 42px; background: linear-gradient(145deg, var(--gold), var(--gold-light)); border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--navy); }
+        .admin-info { flex: 1; }
+        .admin-name { font-weight: 700; font-size: 0.85rem; }
+        .admin-role { font-size: 0.7rem; color: var(--grey); }
+        .main { margin-left: 280px; padding: 2rem; min-height: 100vh; }
+        .content { max-width: 1400px; margin: 0 auto; animation: fadeIn 0.5s ease; }
+        .card { border: none; border-radius: 28px; background: white; box-shadow: var(--shadow-sm); overflow: hidden; transition: var(--transition); }
+        .card:hover { box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1); }
+        .table th { font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--grey); padding: 1rem; }
+        .table td { vertical-align: middle; padding: 1rem; border-bottom: 1px solid var(--grey-light); }
+        .table tbody tr { transition: var(--transition); cursor: pointer; }
+        .table tbody tr:hover { background: rgba(248, 246, 240, 0.5); transform: scale(1.01); }
+        .status-badge { padding: 5px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+        .status-new { background: #FFF3E0; color: #C47D2E; }
+        .status-contacted { background: #E1F0FA; color: #1E6F9F; }
+        .status-interested { background: #E0F4E8; color: #1F7840; }
+        .status-converted { background: #E6E9FF; color: #3F4DB0; }
+        .status-lost { background: #F2EEEC; color: #7F6B5E; }
+        .search-input { border: 1px solid var(--grey-light); border-radius: 40px; padding: 8px 18px; font-size: 0.85rem; transition: var(--transition); }
+        .search-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1); }
+        .empty-state { text-align: center; padding: 4rem; }
+        .empty-state i { font-size: 4rem; color: var(--grey-light); margin-bottom: 1rem; }
+        .btn-outline-info { border-radius: 40px; padding: 5px 16px; transition: var(--transition); }
+        .btn-outline-info:hover { background: var(--gold); border-color: var(--gold); color: var(--navy); transform: translateY(-2px); }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 1050; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 1rem; }
+            .mobile-toggle { display: block; position: fixed; bottom: 20px; right: 20px; z-index: 1100; background: var(--gold); border: none; width: 50px; height: 50px; border-radius: 50%; color: var(--navy); box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
+        }
+        .mobile-toggle { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-badge { background: var(--gold); color: var(--navy); padding: 8px 20px; border-radius: 40px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark"><span class="brand-icon"><i class="fa-solid fa-building-columns"></i></span><div><div class="logo-text">Nest<span>Find</span></div></div></div>
+            <div class="logo-badge" style="margin-top:6px"><span class="super-badge">SUPER ADMIN</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-label">Main</div>
+                <a href="{{ url_for('superadmin.super_admin_dashboard') }}" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+                <a href="{{ url_for('superadmin.super_admin_brokers') }}" class="nav-item"><span class="icon">👥</span> Brokers</a>
+                <a href="{{ url_for('superadmin.super_admin_properties') }}" class="nav-item"><span class="icon">🏠</span> All Properties</a>
+                <a href="{{ url_for('superadmin.super_admin_leads') }}" class="nav-item active"><span class="icon">📋</span> All Leads</a>
+                <a href="{{ url_for('superadmin.super_admin_activities') }}" class="nav-item"><span class="icon">📜</span> Activity Logs</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="admin-card">
+                <div class="avatar">{{ admin_initials }}</div>
+                <div class="admin-info"><div class="admin-name">{{ admin_name }}</div><div class="admin-role">Super Admin</div></div>
+                <a href="{{ url_for('auth.logout') }}" style="color:var(--grey-dark);font-size:14px"><i class="fa-solid fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--navy);">All Leads</h1>
+                    <p style="color: var(--grey);">View and manage all customer inquiries across the platform</p>
+                </div>
+                <div class="d-flex gap-3">
+                    <input type="text" id="searchLeads" class="search-input" placeholder="🔍 Search leads...">
+                    <select id="statusFilter" class="search-input">
+                        <option value="">All Status</option>
+                        <option value="New">New</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Interested">Interested</option>
+                        <option value="Converted">Converted</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                    <span class="stat-badge">Total: {{ leads|length }}</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
+                    <div style="overflow-x: auto;">
+                        <table class="table" id="leadsTable">
+                            <thead style="background: var(--cream);">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Contact</th>
+                                    <th>Property</th>
+                                    <th>Broker</th>
+                                    <th>Status</th>
+                                    <th>Source</th>
+                                    <th>Received</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in leads %}
+                                <tr class="lead-row" data-status="{{ lead.status }}" data-name="{{ lead.name|lower }}" data-email="{{ lead.email|lower }}">
+                                    <td>{{ lead.id }}</td>
+                                    <td><strong>{{ lead.name }}</strong></td>
+                                    <td>
+                                        <div><i class="fa-solid fa-envelope" style="color: var(--gold); width: 20px;"></i> {{ lead.email }}</div>
+                                        <div style="font-size: 0.75rem; margin-top: 5px;"><i class="fa-solid fa-phone" style="color: var(--gold);"></i> {{ lead.phone or 'N/A' }}</div>
+                                    </td>
+                                    <td>
+                                        <strong>{{ lead.property_name or 'General Inquiry' }}</strong>
+                                        {% if lead.message %}
+                                        <div style="font-size: 0.7rem; color: var(--grey); margin-top: 5px;">{{ lead.message[:50] }}{% if lead.message|length > 50 %}...{% endif %}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ lead.broker.name if lead.broker else 'Unassigned' }}</td>
+                                    <td><span class="status-badge status-{{ lead.status|lower }}">{{ lead.status }}</span></td>
+                                    <td>
+                                        <span style="background: var(--cream); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem;">
+                                            <i class="fa-solid fa-{{ 'file-lines' if lead.source == 'Contact Form' else 'link' }}"></i> {{ lead.source }}
+                                        </span>
+                                    </td>
+                                    <td><span style="font-size: 0.75rem; color: var(--grey);">{{ lead.time_ago }}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info view-lead-btn" data-id="{{ lead.id }}">
+                                            <i class="fa-solid fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="9">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-inbox"></i>
+                                            <h4 style="color: var(--grey);">No leads found</h4>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Mobile toggle
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                    if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+
+        // View lead function
+        function viewLead(leadId) {
+            fetch(`/admin/api/lead/${leadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire({
+                        title: `<i class="fa-solid fa-user"></i> ${data.name}`,
+                        html: `
+                            <div style="text-align: left;">
+                                <div style="background: #F8F6F0; padding: 1.2rem; border-radius: 16px; margin-bottom: 1rem;">
+                                    <p><strong><i class="fa-solid fa-envelope" style="color: #C9A84C;"></i> Email:</strong> ${data.email}</p>
+                                    <p><strong><i class="fa-solid fa-phone" style="color: #C9A84C;"></i> Phone:</strong> ${data.phone || 'N/A'}</p>
+                                    <p><strong><i class="fa-solid fa-building" style="color: #C9A84C;"></i> Property:</strong> ${data.property_name || 'General Inquiry'}</p>
+                                    <p><strong><i class="fa-solid fa-user-tie" style="color: #C9A84C;"></i> Broker:</strong> ${data.broker_name || 'N/A'}</p>
+                                    <p><strong><i class="fa-solid fa-globe" style="color: #C9A84C;"></i> Source:</strong> ${data.source}</p>
+                                    <p><strong><i class="fa-regular fa-clock" style="color: #C9A84C;"></i> Received:</strong> ${data.time}</p>
+                                </div>
+                                <div>
+                                    <strong><i class="fa-solid fa-comment"></i> Message:</strong>
+                                    <p style="margin-top: 0.5rem; padding: 0.8rem; background: #F8F6F0; border-radius: 12px;">
+                                        "${data.message || 'No message provided'}"
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'Close',
+                        confirmButtonColor: '#C9A84C',
+                        width: '550px'
+                    });
+                })
+                .catch(() => {
+                    Swal.fire('Error', 'Could not load lead details', 'error');
+                });
+        }
+
+        // Attach event listeners to view buttons
+        document.querySelectorAll('.view-lead-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                viewLead(parseInt(btn.dataset.id));
+            });
+        });
+
+        // Search and filter functionality
+        const searchInput = document.getElementById('searchLeads');
+        const statusFilter = document.getElementById('statusFilter');
+        const rows = document.querySelectorAll('.lead-row');
+
+        function filterLeads() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedStatus = statusFilter.value;
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const status = row.dataset.status;
+                const matchesSearch = text.includes(searchTerm);
+                const matchesStatus = !selectedStatus || status === selectedStatus;
+                
+                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterLeads);
+        statusFilter.addEventListener('change', filterLeads);
+    </script>
+</body>
+</html>
