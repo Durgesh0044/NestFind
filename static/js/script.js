@@ -310,8 +310,8 @@ async function viewPropertyDetails(card, event) {
           </div>
           <div class="col-md-6 p-4">
             <div class="mb-2">
-              <span class="badge bg-navy text-white px-3 py-2 rounded-pill font- outfit" style="font-size:0.75rem;">${data.category || 'Apartment'}</span>
-              <span class="badge ${data.type && data.type.toLowerCase().includes('rent') ? 'bg-info' : 'bg-gold'} px-3 py-2 rounded-pill font-outfit" style="font-size:0.75rem;">${data.type || 'For Sale'}</span>
+              <span class="badge bg-navy text-black px-3 py-2 rounded-pill font- outfit" style="font-size:0.75rem;">${data.category || 'Apartment'}</span>
+              <span class="badge text-black ${data.type && data.type.toLowerCase().includes('rent') ? 'bg-info' : 'bg-gold'} px-3 py-2 rounded-pill font-outfit" style="font-size:0.75rem;">${data.type || 'For Sale'}</span>
             </div>
             <h3 class="mb-1 font-serif fw-bold text-navy">${data.property}</h3>
             <p class="text-muted mb-3"><i class="fa-solid fa-location-dot me-2 text-gold"></i>${data.location || 'Chandigarh Region'}</p>

@@ -251,17 +251,17 @@
                 <div class="col-lg-5">
                     <!-- Premium Balance Card -->
                     <div class="wallet-card">
-                        <div class="wallet-balance-label">Current Balance</div>
+                        <div class="wallet-balance-label text-dark">Current Balance</div>
                         <div class="wallet-balance-val" id="current-balance-display">₹{{ "{:,.2f}".format(current_user.wallet_balance or 0.0) }}</div>
                         
                         <div style="display: flex; gap: 2rem; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.5rem;">
                             <div>
-                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgba(255,255,255,0.5); margin-bottom: 2px;">Broker ID</div>
-                                <div style="font-size: 0.95rem; font-weight:600; letter-spacing: 1px;">#{{ current_user.broker_id }}</div>
+                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgb(1, 0, 0); margin-bottom: 2px;">Broker ID</div>
+                                <div style="font-size: 0.95rem; color: rgb(1, 0, 0); font-weight:600; letter-spacing: 1px;">#{{ current_user.broker_id }}</div>
                             </div>
                             <div>
-                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgba(255,255,255,0.5); margin-bottom: 2px;">Status</div>
-                                <div style="font-size: 0.95rem; font-weight:600; display: flex; align-items:center; gap:5px;">
+                                <div style="font-size:0.7rem; text-transform:uppercase; color: rgb(0, 0, 0); margin-bottom: 2px;">Status</div>
+                                <div style="font-size: 0.7rem; text-transform:uppercase; color: rgb(0, 0, 0); font-weight:600; display: flex; align-items:center; gap:5px;">
                                     <span style="width:8px; height:8px; border-radius:50%; background: #28a745;"></span> Active
                                 </div>
                             </div>

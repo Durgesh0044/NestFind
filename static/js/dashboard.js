@@ -1334,109 +1334,389 @@ function togglePropertyStatus(propertyId, isChecked) {
 }
 
 function copyPortfolioLink(brokerId) {
-  const link = `${window.location.origin}/portfolio/${brokerId}`;
 
-  navigator.clipboard.writeText(link).then(() => {
-    Swal.fire({
-      icon: 'success',
-      title: '<span style="font-family: \'DM Sans\', sans-serif;">Portfolio Link Copied!</span>',
-      html: `
-        <div style="text-align: left; font-family: 'DM Sans', sans-serif;">
-          <div style="background: #F8F6F0; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-            <p style="margin-bottom: 8px; color: #6B7A99; font-size: 12px; font-weight: 500;">SHAREABLE LINK</p>
-            <code style="background: white; display: block; padding: 12px; border-radius: 8px; font-size: 13px; color: #0B1F3A; word-break: break-all; border: 1px solid #E8ECF4;">
-              ${link}
-            </code>
-          </div>
-          <div style="background: #F8F6F0; padding: 12px; border-radius: 12px; margin-bottom: 16px;">
-            <p style="margin-bottom: 8px; color: #6B7A99; font-size: 12px; font-weight: 500;">WHAT CUSTOMERS SEE</p>
-            <p style="font-size: 13px; color: #0B1F3A; margin: 0;">
-              <i class="fa-solid fa-building" style="color: #C9A84C; width: 20px;"></i> All your property listings
-            </p>
-            <p style="font-size: 13px; color: #0B1F3A; margin-top: 8px;">
-              <i class="fa-solid fa-phone" style="color: #C9A84C; width: 20px;"></i> Contact information included
-            </p>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      showConfirmButton: true,
-      confirmButtonText: '<i class="fa-brands fa-whatsapp me-2"></i>Send via WhatsApp',
-      cancelButtonText: '<i class="fa-regular fa-copy me-2"></i>Copy Only',
-      confirmButtonColor: '#25D366',
-      cancelButtonColor: '#0B1F3A',
-      reverseButtons: false,
-      customClass: {
-        popup: 'professional-popup',
-        confirmButton: 'professional-confirm-btn',
-        cancelButton: 'professional-cancel-btn'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent('Check out my property portfolio: ' + link)}`;
-        window.open(whatsappUrl, '_blank');
-      }
-    });
-  }).catch(() => {
-    showToast('Failed to copy link', 'error');
-  });
+    const link = `${window.location.origin}/portfolio/${brokerId}`;
+
+    // SweetAlert popup
+    const showPortfolioPopup = () => {
+
+        Swal.fire({
+            icon: 'success',
+
+            title: `
+                <span style="font-family: 'DM Sans', sans-serif;">
+                    Portfolio Link Ready!
+                </span>
+            `,
+
+            html: `
+                <div style="
+                    text-align: left;
+                    font-family: 'DM Sans', sans-serif;
+                ">
+
+                    <!-- LINK BOX -->
+                    <div style="
+                        background: #F8F6F0;
+                        padding: 16px;
+                        border-radius: 12px;
+                        margin-bottom: 16px;
+                    ">
+
+                        <p style="
+                            margin-bottom: 8px;
+                            color: #6B7A99;
+                            font-size: 12px;
+                            font-weight: 500;
+                        ">
+                            SHAREABLE LINK
+                        </p>
+
+                        <code style="
+                            background: white;
+                            display: block;
+                            padding: 12px;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            color: #0B1F3A;
+                            word-break: break-all;
+                            border: 1px solid #E8ECF4;
+                        ">
+                            ${link}
+                        </code>
+
+                    </div>
+
+                    <!-- FEATURES -->
+                    <div style="
+                        background: #F8F6F0;
+                        padding: 12px;
+                        border-radius: 12px;
+                        margin-bottom: 16px;
+                    ">
+
+                        <p style="
+                            margin-bottom: 8px;
+                            color: #6B7A99;
+                            font-size: 12px;
+                            font-weight: 500;
+                        ">
+                            WHAT CUSTOMERS SEE
+                        </p>
+
+                        <p style="
+                            font-size: 13px;
+                            color: #0B1F3A;
+                            margin: 0;
+                        ">
+                            <i class="fa-solid fa-building"
+                               style="color: #C9A84C; width: 20px;">
+                            </i>
+
+                            All your property listings
+                        </p>
+
+                        <p style="
+                            font-size: 13px;
+                            color: #0B1F3A;
+                            margin-top: 8px;
+                        ">
+                            <i class="fa-solid fa-phone"
+                               style="color: #C9A84C; width: 20px;">
+                            </i>
+
+                            Contact information included
+                        </p>
+
+                    </div>
+
+                </div>
+            `,
+
+            showCancelButton: true,
+            showConfirmButton: true,
+
+            confirmButtonText:
+                '<i class="fa-brands fa-whatsapp me-2"></i>Send via WhatsApp',
+
+            cancelButtonText:
+                '<i class="fa-regular fa-copy me-2"></i>Copy Only',
+
+            confirmButtonColor: '#25D366',
+            cancelButtonColor: '#0B1F3A',
+
+            reverseButtons: false,
+
+            customClass: {
+                popup: 'professional-popup',
+                confirmButton: 'professional-confirm-btn',
+                cancelButton: 'professional-cancel-btn'
+            }
+
+        }).then((result) => {
+
+            // WhatsApp Share
+            if (result.isConfirmed) {
+
+                const message =
+                    `Check out my property portfolio:\n${link}`;
+
+                const whatsappUrl =
+                    `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+                window.open(whatsappUrl, '_blank');
+            }
+
+            // Copy Only
+            else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                fallbackCopy(link);
+            }
+        });
+    };
+
+    // Modern Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+
+        navigator.clipboard.writeText(link)
+
+            .then(() => {
+
+                if (typeof showToast === 'function') {
+                    showToast('Portfolio link copied!', 'success');
+                }
+
+                showPortfolioPopup();
+            })
+
+            .catch((err) => {
+
+                console.error('Clipboard API failed:', err);
+
+                fallbackCopy(link);
+
+                showPortfolioPopup();
+            });
+
+    } else {
+
+        // HTTP / Local IP fallback
+        fallbackCopy(link);
+
+        showPortfolioPopup();
+    }
+}
+
+
+// FALLBACK COPY
+function fallbackCopy(text) {
+
+    const textArea = document.createElement("textarea");
+
+    textArea.value = text;
+
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+
+    document.body.appendChild(textArea);
+
+    textArea.focus();
+    textArea.select();
+
+    try {
+
+        document.execCommand('copy');
+
+        if (typeof showToast === 'function') {
+            showToast('Link copied successfully!', 'success');
+        }
+
+    } catch (err) {
+
+        console.error('Fallback copy failed:', err);
+
+        if (typeof showToast === 'function') {
+            showToast('Failed to copy link', 'error');
+        }
+    }
+
+    document.body.removeChild(textArea);
 }
 
 function copyPropertyLink(propertyId, propertyName) {
-  const link = `${window.location.origin}/property/${propertyId}`;
 
-  navigator.clipboard.writeText(link).then(() => {
-    Swal.fire({
-      icon: 'success',
-      title: '<span style="font-family: \'DM Sans\', sans-serif;">Property Link Copied!</span>',
-      html: `
-        <div style="text-align: left; font-family: 'DM Sans', sans-serif;">
-          <div style="background: #F8F6F0; padding: 12px; border-radius: 12px; margin-bottom: 16px;">
-            <p style="margin-bottom: 4px; font-weight: 600; color: #0B1F3A; font-size: 14px;">${propertyName}</p>
-            <code style="background: white; display: block; padding: 10px; border-radius: 8px; font-size: 12px; color: #6B7A99; word-break: break-all; margin-top: 8px; border: 1px solid #E8ECF4;">
-              ${link}
-            </code>
-          </div>
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <div style="text-align: center; flex: 1;">
-              <i class="fa-solid fa-phone" style="font-size: 20px; color: #25D366; margin-bottom: 4px; display: inline-block;"></i>
-              <p style="font-size: 11px; color: #6B7A99; margin: 0;">WhatsApp</p>
-            </div>
-            <div style="text-align: center; flex: 1;">
-              <i class="fa-regular fa-envelope" style="font-size: 20px; color: #C9A84C; margin-bottom: 4px; display: inline-block;"></i>
-              <p style="font-size: 11px; color: #6B7A99; margin: 0;">Email</p>
-            </div>
-            <div style="text-align: center; flex: 1;">
-              <i class="fa-regular fa-message" style="font-size: 20px; color: #0B1F3A; margin-bottom: 4px; display: inline-block;"></i>
-              <p style="font-size: 11px; color: #6B7A99; margin: 0;">SMS</p>
-            </div>
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      showConfirmButton: true,
-      confirmButtonText: '<i class="fa-brands fa-whatsapp me-2"></i>WhatsApp',
-      cancelButtonText: '<i class="fa-regular fa-copy me-2"></i>Copy Link',
-      confirmButtonColor: '#25D366',
-      cancelButtonColor: '#0B1F3A',
-      reverseButtons: false,
-      customClass: {
-        popup: 'professional-popup',
-        confirmButton: 'professional-confirm-btn',
-        cancelButton: 'professional-cancel-btn'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const message = `Check out this property: ${propertyName} - ${link}`;
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-      }
-    });
-  }).catch(() => {
-    showToast('Failed to copy link', 'error');
-  });
+    const link = `${window.location.origin}/property/${propertyId}`;
+
+    // Reusable popup function
+    const showSharePopup = () => {
+
+        Swal.fire({
+            icon: 'success',
+            title: '<span style="font-family: \'DM Sans\', sans-serif;">Property Link Ready!</span>',
+            html: `
+                <div style="text-align: left; font-family: 'DM Sans', sans-serif;">
+                    
+                    <div style="
+                        background: #F8F6F0;
+                        padding: 12px;
+                        border-radius: 12px;
+                        margin-bottom: 16px;
+                    ">
+                        <p style="
+                            margin-bottom: 4px;
+                            font-weight: 600;
+                            color: #0B1F3A;
+                            font-size: 14px;
+                        ">
+                            ${propertyName}
+                        </p>
+
+                        <code style="
+                            background: white;
+                            display: block;
+                            padding: 10px;
+                            border-radius: 8px;
+                            font-size: 12px;
+                            color: #6B7A99;
+                            word-break: break-all;
+                            margin-top: 8px;
+                            border: 1px solid #E8ECF4;
+                        ">
+                            ${link}
+                        </code>
+                    </div>
+
+                    <div style="
+                        display: flex;
+                        gap: 12px;
+                        justify-content: center;
+                    ">
+                        <div style="text-align:center; flex:1;">
+                            <i class="fa-solid fa-phone"
+                               style="font-size:20px;color:#25D366;margin-bottom:4px;display:inline-block;">
+                            </i>
+                            <p style="font-size:11px;color:#6B7A99;margin:0;">WhatsApp</p>
+                        </div>
+
+                        <div style="text-align:center; flex:1;">
+                            <i class="fa-regular fa-envelope"
+                               style="font-size:20px;color:#C9A84C;margin-bottom:4px;display:inline-block;">
+                            </i>
+                            <p style="font-size:11px;color:#6B7A99;margin:0;">Email</p>
+                        </div>
+
+                        <div style="text-align:center; flex:1;">
+                            <i class="fa-regular fa-message"
+                               style="font-size:20px;color:#0B1F3A;margin-bottom:4px;display:inline-block;">
+                            </i>
+                            <p style="font-size:11px;color:#6B7A99;margin:0;">SMS</p>
+                        </div>
+                    </div>
+
+                </div>
+            `,
+            showCancelButton: true,
+            showConfirmButton: true,
+
+            confirmButtonText:
+                '<i class="fa-brands fa-whatsapp me-2"></i>WhatsApp',
+
+            cancelButtonText:
+                '<i class="fa-regular fa-copy me-2"></i>Copy Link',
+
+            confirmButtonColor: '#25D366',
+            cancelButtonColor: '#0B1F3A',
+
+            customClass: {
+                popup: 'professional-popup',
+                confirmButton: 'professional-confirm-btn',
+                cancelButton: 'professional-cancel-btn'
+            }
+
+        }).then((result) => {
+
+            // WhatsApp Share
+            if (result.isConfirmed) {
+
+                const message =
+                    `Check out this property: ${propertyName} - ${link}`;
+
+                const whatsappUrl =
+                    `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+                window.open(whatsappUrl, '_blank');
+            }
+
+            // Manual Copy Button
+            else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                fallbackCopy(link);
+            }
+        });
+    };
+
+    // Modern Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+
+        navigator.clipboard.writeText(link)
+            .then(() => {
+                showSharePopup();
+            })
+            .catch((err) => {
+
+                console.error('Clipboard API failed:', err);
+
+                fallbackCopy(link);
+
+                showSharePopup();
+            });
+
+    } else {
+
+        // HTTP / LAN fallback
+        fallbackCopy(link);
+
+        showSharePopup();
+    }
 }
 
+
+// Fallback Copy Function
+function fallbackCopy(text) {
+
+    const textArea = document.createElement("textarea");
+
+    textArea.value = text;
+
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+
+    document.body.appendChild(textArea);
+
+    textArea.focus();
+    textArea.select();
+
+    try {
+
+        document.execCommand('copy');
+
+        if (typeof showToast === 'function') {
+            showToast('Link copied successfully!', 'success');
+        }
+
+    } catch (err) {
+
+        console.error('Fallback copy failed:', err);
+
+        if (typeof showToast === 'function') {
+            showToast('Failed to copy link', 'error');
+        }
+    }
+
+    document.body.removeChild(textArea);
+}
 
 
 /* ── Map Picker for Add Property Modal with Two-Way Sync ── */
@@ -2229,10 +2509,10 @@ function clearPortfolioFilters() {
 // Add debounce for better performance on search input
 let searchTimeout;
 const originalFilterPortfolioTable = filterPortfolioTable;
-window.filterPortfolioTable = function() {
+window.filterPortfolioTable = function(resetPage = true) {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        originalFilterPortfolioTable();
+        originalFilterPortfolioTable(resetPage);
     }, 300);
 };
 

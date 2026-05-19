@@ -160,15 +160,15 @@
             <p class="auth-subtitle">Welcome back to premium real estate</p>
         </div>
         <div class="auth-body">
-            <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
                         <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
                             <i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-circle-exclamation' }} me-2"></i> {{ message }}
                         </div>
-                    {% endfor %} -->
-                <!-- {% endif %} -->
-            <!-- {% endwith %} -->
+                    {% endfor %}
+                {% endif %} 
+             {% endwith %}
 
             {% if error %}
             <div class="alert alert-danger">
