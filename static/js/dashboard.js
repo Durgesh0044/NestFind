@@ -2509,10 +2509,10 @@ function clearPortfolioFilters() {
 // Add debounce for better performance on search input
 let searchTimeout;
 const originalFilterPortfolioTable = filterPortfolioTable;
-window.filterPortfolioTable = function(resetPage = true) {
+window.filterPortfolioTable = function() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        originalFilterPortfolioTable(resetPage);
+        originalFilterPortfolioTable();
     }, 300);
 };
 
