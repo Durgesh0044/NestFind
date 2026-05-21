@@ -14,145 +14,19 @@
     rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/nouislider@15.7.1/dist/nouislider.min.css" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
   <style>
-    /* Integrated Search Styles */
-    .search-container {
-      background: white;
-      border-radius: 16px;
-      padding: 1.2rem;
-      margin: 0 auto 2rem;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-      max-width: 1100px;
+    /* Apartment Card Image Hover Effect */
+    .apt-card:hover .carousel-inner div,
+    .apt-card:hover > .apt-img > div {
+      transform: scale(1.1);
+      transition: transform 0.4s ease;
     }
 
-    .main-search-bar {
-      border-bottom: 1px solid var(--grey-light);
-      padding-bottom: 0.5rem;
-    }
-
-    .btn-nearme {
-      background: var(--navy);
-      color: white;
-      border: none;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-
-    .btn-nearme:hover {
-      background: var(--gold);
-      color: var(--navy);
-    }
-
-    .btn-outline-gold {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      transition: all 0.3s;
-    }
-
-    .btn-outline-gold:hover {
-      background: var(--gold);
-      color: white;
-    }
-
-    .advanced-filters-panel {
-      background: var(--cream);
-      border-radius: 12px;
-      padding: 1.2rem;
-      margin-top: 1rem;
-      animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .filter-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--navy);
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-
-    .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      color: var(--grey-dark);
-    }
-
-    .checkbox-label input {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      accent-color: var(--gold);
-    }
-
-    .price-quick-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .price-quick-btn {
-      padding: 0.2rem 0.6rem;
-      font-size: 0.7rem;
-      background: white;
-      border: 1px solid var(--grey-light);
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .price-quick-btn:hover {
-      background: var(--gold);
-      color: white;
-      border-color: var(--gold);
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 0.8rem;
-      justify-content: flex-end;
-      padding-top: 1rem;
-      border-top: 1px solid var(--grey-light);
-    }
-
-    .filter-actions .btn-primary {
-      background: var(--gold);
-      border: none;
-      color: var(--navy);
-      font-weight: 600;
-    }
-
-    .filter-actions .btn-secondary {
-      background: var(--grey-light);
-      border: none;
-      color: var(--grey-dark);
+    .carousel-inner div,
+    .apt-card > .apt-img > div {
+      transition: transform 0.4s ease;
     }
   </style>
 </head>
@@ -261,17 +135,12 @@
                     step="1000">
                 </div>
                 <div class="price-quick-btns">
-                  <button type="button" class="price-quick" data-min="0" data-max="5000">Under ₹5k</button>
-                  <button type="button" class="price-quick" data-min="5000" data-max="10000">₹5k-10k</button>
-                  <button type="button" class="price-quick" data-min="10000" data-max="20000">₹10k-20k</button>
-                  <button type="button" class="price-quick" data-min="20000" data-max="50000">₹20k-50k</button>
-                  <button type="button" class="price-quick" data-min="50000" data-max="100000">₹50k-1L</button>
-                  <button type="button" class="price-quick" data-min="100000" data-max="500000">₹1L-5L</button>
-                  <button type="button" class="price-quick" data-min="500000" data-max="1000000">₹5L-10L</button>
-                  <button type="button" class="price-quick" data-min="1000000" data-max="5000000">₹10L-50L</button>
-                  <button type="button" class="price-quick" data-min="5000000" data-max="10000000">₹50L-1Cr</button>
-                  <button type="button" class="price-quick" data-min="10000000" data-max="20000000">₹1Cr-2Cr</button>
-                  <button type="button" class="price-quick" data-min="20000000" data-max="0">₹2Cr+</button>
+                  <div id="priceRangeSlider" class="price-range-slider"></div>
+                  <div class="price-range-values">
+                    <div class="price-value-display">
+                      Selected: <span class="price-selected-display">₹5k - ₹10k</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -719,8 +588,62 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/nouislider@15.7.1/dist/nouislider.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    // Initialize Price Range Slider
+    document.addEventListener('DOMContentLoaded', function() {
+      const priceRangeSlider = document.getElementById('priceRangeSlider');
+      const minPriceInput = document.getElementById('minPriceMain');
+      const maxPriceInput = document.getElementById('maxPriceMain');
+      const priceSelectedDisplay = document.querySelector('.price-selected-display');
+
+      if (priceRangeSlider) {
+        // Define price ranges like the original buttons
+        const priceRanges = [
+          { min: 5000, max: 10000, label: '₹5k - ₹10k' },
+          { min: 10000, max: 20000, label: '₹10k - ₹20k' },
+          { min: 20000, max: 50000, label: '₹20k - ₹50k' },
+          { min: 50000, max: 100000, label: '₹50k - ₹1L' },
+          { min: 100000, max: 500000, label: '₹1L - ₹5L' },
+          { min: 500000, max: 1000000, label: '₹5L - ₹10L' },
+          { min: 1000000, max: 5000000, label: '₹10L - ₹50L' },
+          { min: 5000000, max: 10000000, label: '₹50L - ₹1Cr' },
+          { min: 10000000, max: 20000000, label: '₹1Cr - ₹2Cr' }
+        ];
+        
+        // Create slider with predefined steps
+        noUiSlider.create(priceRangeSlider, {
+          start: 1, // Start at index 1 (5k-10k)
+          connect: [true, false], // Left side connection
+          range: {
+            'min': 0,
+            'max': priceRanges.length - 1
+          },
+          step: 1,
+          tooltips: {
+            to: function(index) {
+              return priceRanges[Math.round(index)].label;
+            },
+            from: function(value) {
+              return Number(value);
+            }
+          }
+        });
+
+        // Update inputs when slider changes
+        priceRangeSlider.noUiSlider.on('update', function(values) {
+          const index = Math.round(values[0]);
+          const range = priceRanges[index];
+          
+          minPriceInput.value = range.min;
+          maxPriceInput.value = range.max;
+          priceSelectedDisplay.textContent = range.label;
+        });
+      }
+    });
+  </script>
   <script>
     // This should only run on the HOME page
     const savedProperty = localStorage.getItem('inquiryProperty');

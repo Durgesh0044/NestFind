@@ -253,7 +253,6 @@ def all_properties():
                     type_conditions.append(Property.type.ilike(f'%{lt}%'))
             
             if type_conditions:
-                from sqlalchemy import or_
                 query = query.filter(or_(*type_conditions))
                 print(f"📋 Listing type filter applied: {listing_types}")
         
