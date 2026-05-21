@@ -770,6 +770,11 @@ def parse_price_to_number(price_str):
     except:
         return 0
 
+ALLOWED_EXTENSIONS = {
+    'png', 'jpg', 'jpeg', 'gif',
+    'webp', 'bmp', 'jfif',
+    'pdf', 'csv', 'xlsx', 'xls'
+}
 
 def allowed_file(filename):
     """Check if file extension is allowed"""

@@ -413,6 +413,77 @@ img { max-width: 100%; display: block; }
   background-size: cover;
   background-position: center;
   position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+#apartment .apt-img .carousel,
+.apt-img .carousel {
+  height: 100% !important;
+  width: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#apartment .apt-img .carousel-inner,
+.apt-img .carousel-inner {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+#apartment .apt-img .carousel-item,
+.apt-img .carousel-item {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden;
+}
+
+#apartment .apt-img .carousel-item > div,
+.apt-img .carousel-item > div {
+  height: 100%;
+  width: 100%;
+}
+
+#apartment .apt-img .carousel-control-prev,
+#apartment .apt-img .carousel-control-next,
+.apt-img .carousel-control-prev,
+.apt-img .carousel-control-next {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  bottom: auto;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 100;
+  border: none;
+  padding: 0;
+}
+
+.apt-img .carousel-control-prev {
+  left: 10px;
+}
+
+.apt-img .carousel-control-next {
+  right: 10px;
+}
+
+.apt-img:hover .carousel-control-prev,
+.apt-img:hover .carousel-control-next {
+  opacity: 1;
+}
+
+.apt-img .carousel-control-prev-icon,
+.apt-img .carousel-control-next-icon {
+  filter: invert(1);
+  width: 20px;
+  height: 20px;
 }
 
 .apt-badge {
@@ -2580,3 +2651,218 @@ body {
   .stat-num { font-size: 1.5rem; }
   .about-badge-box { display: none; }
 }
+/* Integrated Search Styles */
+    .search-container {
+      background: white;
+      border-radius: 16px;
+      padding: 1.2rem;
+      margin: 0 auto 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      max-width: 1100px;
+    }
+
+    .main-search-bar {
+      border-bottom: 1px solid var(--grey-light);
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-nearme {
+      background: var(--navy);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-nearme:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-outline-gold {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-outline-gold:hover {
+      background: var(--gold);
+      color: white;
+    }
+
+    .advanced-filters-panel {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1rem;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--grey-dark);
+    }
+
+    .checkbox-label input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--gold);
+    }
+
+    .price-quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .price-range-slider {
+      margin: 1rem 0 0.5rem 0;
+      padding: 0 0.5rem;
+    }
+
+    .price-range-values {
+      text-align: center;
+      margin-top: 0.8rem;
+    }
+
+    .price-value-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy);
+      background: rgba(255, 193, 7, 0.1);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      display: inline-block;
+      min-width: 150px;
+    }
+
+    .price-selected-display {
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* noUiSlider Styling - Single Handle */
+    .noUi-target {
+      background: #f0f0f0;
+      border-radius: 8px;
+      border: 1px solid var(--grey-light);
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.08);
+      height: 8px;
+    }
+
+    .noUi-target.noUi-touch-active {
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .noUi-base {
+      height: 8px;
+    }
+
+    .noUi-handle {
+      background: var(--gold);
+      border: 2px solid white;
+      border-radius: 50%;
+      cursor: grab;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      width: 28px;
+      height: 28px;
+      top: -10px;
+      right: -14px;
+    }
+
+    .noUi-handle:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: scale(1.15);
+    }
+
+    .noUi-handle:active {
+      cursor: grabbing;
+    }
+
+    .noUi-handle.noUi-handle-lower {
+      z-index: 5;
+    }
+
+    .noUi-connect {
+      background: var(--gold);
+      height: 8px;
+    }
+
+    .noUi-tooltip {
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      bottom: -35px;
+    }
+
+    .price-quick-btn {
+      display: none;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      padding-top: 1rem;
+      border-top: 1px solid var(--grey-light);
+    }
+
+    .filter-actions .btn-primary {
+      background: var(--gold);
+      border: none;
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    .filter-actions .btn-secondary {
+      background: var(--grey-light);
+      border: none;
+      color: var(--grey-dark);
+    }

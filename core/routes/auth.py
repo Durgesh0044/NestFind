@@ -2,9 +2,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, current_user, login_required
 from core.models import Broker
 from core.extensions import db, mail
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Message
 import re
 
 auth_bp = Blueprint('auth', __name__)
+
+s = URLSafeTimedSerializer('your-secret-key')
 
 @auth_bp.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -160,32 +164,71 @@ def reset_password(token):
     try:
         # Token valid for 1 hour (3600 seconds)
         email = s.loads(token, salt='password-reset-salt', max_age=3600)
+
     except:
-        return render_template("auth/forgot_password.html", error="The reset link is invalid or has expired.")
+        return render_template(
+            "auth/forgot_password.html",
+            error="The reset link is invalid or has expired."
+        )
     
     if request.method == "POST":
+
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         
         if password != confirm_password:
-            return render_template("auth/reset_password.html", token=token, error="Passwords do not match")
+            return render_template(
+                "auth/reset_password.html",
+                token=token,
+                error="Passwords do not match"
+            )
         
-        # Password complexity validation: 6-8 chars, letters and special characters
-        if not (6 <= len(password) <= 8):
-            return render_template("auth/reset_password.html", token=token, error="Password must be 6-8 characters long")
-        
-        if not re.search(r"[a-zA-Z]", password) or not re.search(r"[^a-zA-Z0-9]", password):
-            return render_template("auth/reset_password.html", token=token, error="Password must include at least one letter and one special character")
+        # Password validation
+        if len(password) < 8:
+            return render_template(
+                "auth/reset_password.html",
+                token=token,
+                error="Password must be at least 8 characters long"
+            )
+
+        if not re.search(r"[a-zA-Z]", password):
+            return render_template(
+                "auth/reset_password.html",
+                token=token,
+                error="Password must include at least one letter"
+            )
+
+        if not re.search(r"[0-9]", password):
+            return render_template(
+                "auth/reset_password.html",
+                token=token,
+                error="Password must include at least one number"
+            )
+
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            return render_template(
+                "auth/reset_password.html",
+                token=token,
+                error="Password must include at least one special character"
+            )
         
         broker = Broker.query.filter_by(email=email).first()
+
         if broker:
             broker.set_password(password)
             db.session.commit()
-            flash("Your password has been reset successfully. Please sign in.", "success")
+
+            flash(
+                "Your password has been reset successfully. Please sign in.",
+                "success"
+            )
+
             return redirect(url_for('auth.signin'))
+
         else:
-            return render_template("auth/forgot_password.html", error="User not found")
+            return render_template(
+                "auth/forgot_password.html",
+                error="User not found"
+            )
             
     return render_template("auth/reset_password.html", token=token)
-
-

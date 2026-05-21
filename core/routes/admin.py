@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from core.models import Property, Broker, Lead, UploadedFile, Activity, WalletTransaction
 from core.extensions import db
+from sqlalchemy import or_
+import traceback
 from core.utils import (
     get_admin_dashboard_data, add_activity, create_notification, 
     process_csv_file, process_excel_file, process_pdf_file, 
@@ -18,6 +20,17 @@ from core.utils import (
 
 # Configure Stripe API Key
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+ALLOWED_EXTENSIONS = {
+    'png', 'jpg', 'jpeg', 'gif',
+    'webp', 'bmp', 'jfif',
+    'pdf', 'csv', 'xlsx', 'xls'
+}
+
+ALLOWED_IMAGE_EXTS = {
+    'jpg', 'jpeg', 'png',
+    'gif', 'webp', 'bmp', 'jfif'
+}
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -218,7 +231,7 @@ def upload_file():
 @login_required
 def add_property():
     """Add a new property via AJAX"""
-    data = request.get_json()
+    data = request.form
     print(f"Received property data: {data}")  # Debug log
     
     # Handle image upload if present
@@ -471,68 +484,125 @@ def upload_image():
     """Upload image for property update"""
     try:
         if 'image' not in request.files:
-            return jsonify({'success': False, 'message': 'No image file provided'}), 400
-        
-        image_file = request.files['image']
-        if not image_file or not image_file.filename:
-            return jsonify({'success': False, 'message': 'No image file selected'}), 400
-        
-        # Generate unique filename
-        filename = secure_filename(image_file.filename)
-        ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-        unique_filename = f"{uuid.uuid4().hex}.{ext}"
-        
-        # Ensure upload directory exists
-        os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
-        
-        # Save image to uploads directory
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-        image_file.save(image_path)
-        
-        print(f"Image uploaded: {unique_filename}")  # Debug log
-        return jsonify({'success': True, 'filename': unique_filename})
-    except Exception as e:
-        print(f"Error uploading image: {e}")  # Debug log
-        return jsonify({'success': False, 'message': str(e)}), 500
+            return jsonify({
+                'success': False,
+                'message': 'No image file provided'
+            }), 400
 
+        image_file = request.files['image']
+
+        if not image_file or not image_file.filename:
+            return jsonify({
+                'success': False,
+                'message': 'No image file selected'
+            }), 400
+
+        filename = secure_filename(image_file.filename)
+
+        if '.' not in filename:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid file'
+            }), 400
+
+        ext = filename.rsplit('.', 1)[1].lower()
+
+        if ext not in ALLOWED_IMAGE_EXTS:
+            return jsonify({
+                'success': False,
+                'message': f'File type .{ext} not allowed'
+            }), 400
+
+        unique_filename = f"{uuid.uuid4().hex}.{ext}"
+
+        os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+        image_path = os.path.join(
+            current_app.config['UPLOAD_FOLDER'],
+            unique_filename
+        )
+
+        image_file.save(image_path)
+
+        return jsonify({
+            'success': True,
+            'filename': unique_filename
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 @admin_bp.route("/admin/api/upload-images", methods=["POST"])
 def upload_images():
     """Upload multiple images for property update"""
     try:
         if 'images[]' not in request.files:
-            return jsonify({'success': False, 'message': 'No image files provided'}), 400
-        
+            return jsonify({
+                'success': False,
+                'message': 'No image files provided'
+            }), 400
+
         image_files = request.files.getlist('images[]')
+
         if not image_files or len(image_files) == 0:
-            return jsonify({'success': False, 'message': 'No image files selected'}), 400
-        
+            return jsonify({
+                'success': False,
+                'message': 'No image files selected'
+            }), 400
+
         uploaded_filenames = []
-        
+
+        os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
+
         for image_file in image_files:
+
             if not image_file or not image_file.filename:
                 continue
-            
-            # Generate unique filename
-            filename = secure_filename(image_file.filename)
-            ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-            unique_filename = f"{uuid.uuid4().hex}.{ext}"
-            
-            # Ensure upload directory exists
-            os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
-            
-            # Save image to uploads directory
-            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-            image_file.save(image_path)
-            
-            uploaded_filenames.append(unique_filename)
-        
-        print(f"Images uploaded: {uploaded_filenames}")  # Debug log
-        return jsonify({'success': True, 'filenames': uploaded_filenames})
-    except Exception as e:
-        print(f"Error uploading images: {e}")  # Debug log
-        return jsonify({'success': False, 'message': str(e)}), 500
 
+            filename = secure_filename(image_file.filename)
+
+            if '.' not in filename:
+                continue
+
+            ext = filename.rsplit('.', 1)[1].lower()
+
+            if ext not in ALLOWED_IMAGE_EXTS:
+                continue
+
+            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+
+            image_path = os.path.join(
+                current_app.config['UPLOAD_FOLDER'],
+                unique_filename
+            )
+
+            image_file.save(image_path)
+
+            uploaded_filenames.append(unique_filename)
+
+        if not uploaded_filenames:
+            return jsonify({
+                'success': False,
+                'message': 'No valid images uploaded'
+            }), 400
+
+        return jsonify({
+            'success': True,
+            'filenames': uploaded_filenames
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 @admin_bp.route('/static/uploads/<filename>')
 def uploaded_file(filename):
@@ -714,7 +784,7 @@ def update_property(property_id):
         if property_obj.broker_id != current_user.broker_id:
             return jsonify({'success': False, 'message': 'Unauthorized'}), 403
             
-        data = request.get_json()
+        data = request.get_json(silent=True) or request.form.to_dict()
         
         # Update fields
         property_obj.property = data.get('title', property_obj.property)

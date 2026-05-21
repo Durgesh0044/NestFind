@@ -266,6 +266,20 @@ async function viewPropertyDetails(card, event) {
   const modal = new bootstrap.Modal(modalElement);
   modal.show();
 
+  // Close image viewer modal when property modal closes
+  modalElement.addEventListener('hidden.bs.modal', () => {
+    const imageModal = document.getElementById('imageViewerModal');
+    if (imageModal) {
+      const imgModalInstance = bootstrap.Modal.getInstance(imageModal);
+      if (imgModalInstance) {
+        imgModalInstance.hide();
+      }
+    }
+    // Clean up any remaining backdrops
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => backdrop.remove());
+  }, { once: true });
+
   // Show loading
   const modalBody = document.getElementById('propertyModalBody');
   modalBody.innerHTML = `
@@ -310,8 +324,8 @@ async function viewPropertyDetails(card, event) {
           </div>
           <div class="col-md-6 p-4">
             <div class="mb-2">
-              <span class="badge bg-navy text-white px-3 py-2 rounded-pill font- outfit" style="font-size:0.75rem;">${data.category || 'Apartment'}</span>
-              <span class="badge ${data.type && data.type.toLowerCase().includes('rent') ? 'bg-info' : 'bg-gold'} px-3 py-2 rounded-pill font-outfit" style="font-size:0.75rem;">${data.type || 'For Sale'}</span>
+              <span class="badge bg-navy text-black px-3 py-2 rounded-pill font- outfit" style="font-size:0.75rem;">${data.category || 'Apartment'}</span>
+              <span class="badge text-black ${data.type && data.type.toLowerCase().includes('rent') ? 'bg-info' : 'bg-gold'} px-3 py-2 rounded-pill font-outfit" style="font-size:0.75rem;">${data.type || 'For Sale'}</span>
             </div>
             <h3 class="mb-1 font-serif fw-bold text-navy">${data.property}</h3>
             <p class="text-muted mb-3"><i class="fa-solid fa-location-dot me-2 text-gold"></i>${data.location || 'Chandigarh Region'}</p>
@@ -457,6 +471,12 @@ function performSearch() {
   const type = document.getElementById('searchType')?.value;
   if (type && type !== '') params.append('type', type);
 
+  // Main Search Bar Price Range (from quick buttons or manual input)
+  const minPriceMain = document.getElementById('minPriceMain')?.value;
+  const maxPriceMain = document.getElementById('maxPriceMain')?.value;
+  if (minPriceMain !== undefined && minPriceMain !== '') params.append('min_price', minPriceMain);
+  if (maxPriceMain !== undefined && maxPriceMain !== '' && maxPriceMain !== '0') params.append('max_price', maxPriceMain);
+
   // Budget filter - Convert to proper price range
   const budgetValue = document.getElementById('searchBudget')?.value;
   if (budgetValue && budgetValue !== '') {
@@ -481,14 +501,14 @@ function performSearch() {
   // Advanced filters - Price Range
   const minPrice = document.getElementById('minPrice')?.value;
   const maxPrice = document.getElementById('maxPrice')?.value;
-  if (minPrice) params.append('min_price', minPrice);
-  if (maxPrice) params.append('max_price', maxPrice);
+  if (minPrice && minPrice !== '') params.append('min_price', minPrice);
+  if (maxPrice && maxPrice !== '') params.append('max_price', maxPrice);
 
   // Advanced filters - Area Range
   const minArea = document.getElementById('minArea')?.value;
   const maxArea = document.getElementById('maxArea')?.value;
-  if (minArea) params.append('min_area', minArea);
-  if (maxArea) params.append('max_area', maxArea);
+  if (minArea && minArea !== '') params.append('min_area', minArea);
+  if (maxArea && maxArea !== '') params.append('max_area', maxArea);
 
   // Bedrooms filter
   const bedrooms = [];
@@ -503,6 +523,13 @@ function performSearch() {
     categories.push(cb.value);
   });
   if (categories.length) params.append('category', categories.join(','));
+
+  // Listing Type filter (For Sale / For Rent)
+  const listingTypes = [];
+  document.querySelectorAll('.filter-checkbox[data-filter="listing_type"]:checked').forEach(cb => {
+    listingTypes.push(cb.value);
+  });
+  if (listingTypes.length) params.append('listing_type', listingTypes.join(','));
 
   // Redirect to search results
   window.location.href = `/properties?${params.toString()}`;
@@ -519,55 +546,12 @@ document.getElementById('searchLocation')?.addEventListener('keypress', function
 
 
 /* ---- 14. IMAGE EXPANSION ---- */
+// Image expansion disabled - background images won't open in modal on click
 document.addEventListener('DOMContentLoaded', () => {
-  const imageModal = document.getElementById('imageViewerModal');
-  const expandedImg = document.getElementById('expandedImage');
-
-  if (imageModal && expandedImg) {
-    const bsModal = new bootstrap.Modal(imageModal);
-
-    // Add click listener to all property images
-    document.addEventListener('click', (e) => {
-      // Find if clicked element is a property image
-      const target = e.target;
-      const isAptImg = target.closest('.apt-img');
-
-      if (isAptImg) {
-        // Find the actual image URL
-        let imageUrl = '';
-
-        // Handle images inside carousel or single div
-        const bgImg = target.style.backgroundImage;
-
-        if (bgImg && bgImg !== 'none') {
-          imageUrl = bgImg.slice(4, -1).replace(/['"]/g, "");
-        } else {
-          // Check computed style if inline style is missing
-          const computedStyle = window.getComputedStyle(target);
-          if (computedStyle.backgroundImage && computedStyle.backgroundImage !== 'none') {
-            imageUrl = computedStyle.backgroundImage.slice(4, -1).replace(/['"]/g, "");
-          }
-        }
-
-        // If still not found, check if clicked on an IMG tag inside
-        if (!imageUrl && target.tagName === 'IMG') {
-          imageUrl = target.src;
-        }
-
-        if (imageUrl && !e.target.closest('.carousel-control-prev') && !e.target.closest('.carousel-control-next') && !e.target.closest('.apt-fav')) {
-          expandedImg.src = imageUrl;
-          bsModal.show();
-        }
-      }
-    });
-  }
-
-
-
   // Add cursor pointer to property images
   const style = document.createElement('style');
   style.textContent = `
-    .apt-img { cursor: zoom-in; }
+    .apt-img { cursor: pointer; }
     .carousel-control-prev, .carousel-control-next, .apt-fav { cursor: pointer; }
   `;
   document.head.appendChild(style);
@@ -1496,13 +1480,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ========== COMPLETE WORKING SEARCH FUNCTIONS ==========
 
-// DOM Elements
-const mainSearchBtn = document.getElementById('mainSearchBtn');
-const filterToggleBtn = document.getElementById('filterToggleBtn');
-const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-const clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
-const advancedFiltersPanel = document.getElementById('advancedFiltersPanel');
+// DOM Elements - will be initialized on DOMContentLoaded
+let mainSearchBtn;
+let filterToggleBtn;
+let applyFiltersBtn;
+let resetFiltersBtn;
+let clearAllFiltersBtn;
+let advancedFiltersPanel;
 
 // Set price range from quick buttons
 function setPriceRange(min, max) {
@@ -1512,6 +1496,7 @@ function setPriceRange(min, max) {
   if (maxInput) maxInput.value = max || '';
   updateActiveFiltersDisplay();
   // Auto search after price selection
+  setTimeout(() => performSearch(), 300);
 }
 
 // Toggle advanced filters panel
@@ -1701,6 +1686,14 @@ function performSearch() {
 
 // Initialize all event listeners
 document.addEventListener('DOMContentLoaded', function () {
+  // Initialize DOM Elements
+  mainSearchBtn = document.getElementById('mainSearchBtn');
+  filterToggleBtn = document.getElementById('filterToggleBtn');
+  applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  resetFiltersBtn = document.getElementById('resetFiltersBtn');
+  clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
+  advancedFiltersPanel = document.getElementById('advancedFiltersPanel');
+
   // Search button
   if (mainSearchBtn) mainSearchBtn.addEventListener('click', performSearch);
 
